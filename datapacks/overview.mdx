@@ -1,0 +1,94 @@
+---
+title: "Customizing Silent Gear with Minecraft data packs"
+description: "Use Minecraft data packs to add, replace, and remove Silent Gear materials, parts, and traits — no Java code or mod installation required."
+---
+
+Silent Gear reads its material, part, and trait definitions from data pack JSON files at startup. This means you can change almost every aspect of the gear system — from iron's durability value to which traits a custom ore provides — entirely through JSON, with no mod code required.
+
+## What you can customize
+
+Data packs can create or override:
+
+- **Materials** — the raw inputs used when crafting compound parts (e.g. iron ingots, wood planks, gems).
+- **Parts** — the compound parts that are assembled into finished gear (e.g. blades, handles, tips).
+- **Traits** — passive effects that materials and parts can grant to finished gear.
+- **Gear recipes** — standard Minecraft crafting/smithing recipes that produce gear items (these use the normal `data/<namespace>/recipe/` folder and are not Silent Gear-specific).
+
+## Folder structure
+
+Place your JSON files inside your data pack using the following paths:
+
+```
+data/
+  <namespace>/
+    silentgear_materials/   ← material definitions
+    silentgear_parts/       ← part definitions
+    silentgear_traits/      ← trait definitions
+```
+
+Replace `<namespace>` with your own mod or data pack namespace (e.g. `mypack`). The file name (without the `.json` extension) becomes the resource path component of the object's ID. For example, `data/mypack/silentgear_materials/mythril.json` registers the material `mypack:mythril`.
+
+<Note>
+The folder names `silentgear_materials`, `silentgear_parts`, and `silentgear_traits` are fixed. Silent Gear scans those exact paths via `DataResourceManager` when the server (or single-player world) loads.
+</Note>
+
+## Override vs. add
+
+Silent Gear uses the **resource location of the file** as the object's ID.
+
+- **To add a new object** — use a namespace and path that does not already exist (e.g. `mypack:mythril`).
+- **To override an existing object** — use the same resource location as the built-in definition. For example, placing a file at `data/silentgear/silentgear_materials/iron.json` in your data pack replaces the built-in iron material entirely.
+
+<Warning>
+Overriding a built-in material completely replaces it. You must re-specify every field you want to keep; there is no partial-merge behaviour.
+</Warning>
+
+## Creating a data pack
+
+<Steps>
+  <Step title="Create the data pack folder">
+    Inside your Minecraft instance's `saves/<world>/datapacks/` folder (or the `datapacks/` folder of a server), create a new directory for your pack, e.g. `my_gear_pack/`.
+  </Step>
+  <Step title="Add pack.mcmeta">
+    Create a `pack.mcmeta` file at the root of your pack folder:
+
+    ```json pack.mcmeta
+    {
+      "pack": {
+        "pack_format": 41,
+        "description": "My Silent Gear customizations"
+      }
+    }
+    ```
+
+    Check the [Minecraft wiki](https://minecraft.wiki/w/Data_pack) for the current `pack_format` value for your game version.
+  </Step>
+  <Step title="Create the namespace folder">
+    Create `data/<your_namespace>/` inside the pack. Choose a unique namespace to avoid conflicts with other packs.
+  </Step>
+  <Step title="Create the Silent Gear sub-folders">
+    Create the relevant sub-directories as needed:
+
+    ```
+    data/<your_namespace>/silentgear_materials/
+    data/<your_namespace>/silentgear_parts/
+    data/<your_namespace>/silentgear_traits/
+    ```
+  </Step>
+  <Step title="Add your JSON files">
+    Write your material, part, and trait JSON files inside those folders. See the linked pages for the exact schemas.
+  </Step>
+  <Step title="Reload in-game">
+    Run `/reload` in-game (requires operator permissions) to apply your changes without restarting the server. Silent Gear's managers re-read all data pack files on every reload.
+  </Step>
+</Steps>
+
+## How Silent Gear loads the files
+
+When the resource manager reloads, each manager (`MaterialManager`, `PartManager`, `TraitManager`) extends `DataResourceManager` and calls `resourceManager.listResources(dataPath, ...)` to collect every `.json` file under its designated folder across all loaded data packs. Files are decoded with the appropriate Mojang `Codec` and registered under their resource location ID.
+
+If a file fails to decode, the error is logged and the object is skipped — the rest of the pack continues to load normally.
+
+<Tip>
+Check your `latest.log` (or the server log) after a `/reload` if a material or part is missing in-game. Silent Gear logs every object it decodes, and decode errors appear there with a description of what went wrong.
+</Tip>

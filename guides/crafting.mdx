@@ -1,0 +1,90 @@
+---
+title: "Crafting Silent Gear tools and armor with blueprints"
+description: "Learn the two-step blueprint workflow to craft Silent Gear tools and armor: first build parts at the crafting table, then assemble finished gear."
+---
+
+Silent Gear replaces fixed tool recipes with a modular blueprint system. Instead of one recipe producing a finished pickaxe, you first craft each part separately, then combine the parts into a finished item. This avoids conflicts with other mods and gives you complete control over which materials go into each piece of gear.
+
+## How the blueprint system works
+
+Every piece of Silent Gear requires a **blueprint** to craft. Blueprints act as reusable recipe templates — they are consumed only in the assembly step, not the part-crafting step (unless you are using single-use **templates** instead, which are consumed on use).
+
+There are two kinds of blueprints:
+- **Part blueprints** — used to craft individual parts (rod, tip, binding, etc.)
+- **Gear blueprints** — used to assemble a finished gear item from its parts
+
+The `blueprintTypes` config option controls which types are available: `BOTH` (default), `BLUEPRINT` only, or `TEMPLATE` only.
+
+<Tip>New players receive a **Blueprint Package** when joining a world for the first time (configurable). Right-clicking the package opens it and gives you a starter set of blueprints.</Tip>
+
+## Step 1: Craft parts
+
+Each part type has its own blueprint. Place the part blueprint and the raw material(s) in any crafting grid to produce a part item.
+
+<Steps>
+  <Step title="Place the part blueprint">
+    Put the relevant part blueprint (e.g., **Rod Blueprint**) anywhere in the crafting grid.
+  </Step>
+  <Step title="Add materials">
+    Fill the remaining slots with the material you want to use. Different part types accept different numbers of materials — a rod typically uses two material items.
+  </Step>
+  <Step title="Take the part">
+    The output slot shows the finished part item, embedding your chosen material. The blueprint stays in the grid and can be reused.
+  </Step>
+</Steps>
+
+### Compound parts
+
+Some part types are **compound parts**, meaning you combine multiple raw materials into a single part item. The resulting part inherits averaged stats from all the materials you used, weighted equally.
+
+Common compound parts include:
+- **Rod** — handle for most tools and weapons
+- **Tip** — optional upgrade applied to tool heads
+- **Binding** — wrapping on tool handles
+- **Grip** — handle wrap for weapons
+- **Coating** — surface treatment applied on a smithing table
+- **Lining** — padding inside armor
+
+To make a compound part with a single pure material, simply fill all the blueprint slots with the same material item.
+
+## Step 2: Assemble finished gear
+
+Once you have all the required parts, use the gear blueprint to combine them into a finished item.
+
+<Steps>
+  <Step title="Open a crafting table">
+    The gear blueprint recipe uses a shaped pattern, so you need a full 3×3 crafting grid.
+  </Step>
+  <Step title="Place the gear blueprint">
+    Put the gear blueprint in the correct position for the gear type (usually the center or top slot — check JEI/EMI for the exact layout).
+  </Step>
+  <Step title="Place all required parts">
+    Arrange the parts according to the recipe pattern. The **main part** (tool head or armor plate) goes in the slot that determines the gear type. Supporting parts such as the rod and binding fill the remaining slots.
+  </Step>
+  <Step title="Retrieve your gear">
+    The finished gear item appears in the output slot, fully constructed with all the stats derived from your chosen materials.
+  </Step>
+</Steps>
+
+<Note>The main part determines the type of gear produced. For example, placing a pickaxe head in the main part slot produces a pickaxe, regardless of what rod or binding you use alongside it.</Note>
+
+## Crafting surfaces
+
+Silent Gear supports three crafting surfaces, each suited to a different stage of the game.
+
+| Surface | When to use |
+|---|---|
+| **Crafting table** | Standard part and gear assembly — available from the start |
+| **Stone Anvil** | Early-game alternative for basic gear; requires rough materials |
+| **Gear Smithing Table** | Advanced crafting for higher-tier recipes and upgrades |
+
+The stone anvil is the earliest crafting surface you can build. It unlocks basic gear before you have access to a full crafting table or more refined materials.
+
+## Looking up recipes
+
+Silent Gear recipes are dynamic — the ingredients and stats change depending on which materials are loaded. Use a recipe viewer mod to browse all valid combinations:
+
+- **JEI (Just Enough Items)** — hover over any part or gear item and press **R** to see recipes, or **U** to see uses
+- **EMI** — similar functionality; hover an item and press the configured key
+
+<Warning>Silent Gear recipes are marked as `isSpecial = true`, which means they do not appear in the vanilla recipe book. A recipe viewer mod is strongly recommended.</Warning>

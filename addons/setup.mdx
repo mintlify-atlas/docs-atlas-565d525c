@@ -1,0 +1,131 @@
+---
+title: 'Setting up your Silent Gear add-on mod with Gradle'
+description: 'Configure Gradle to depend on Silent Gear and Silent Lib so you can build add-on mods that extend gear types, part types, and trait effects.'
+---
+
+Silent Gear exposes a full Java API for add-on mods. Add-ons can register new gear types, part types, and trait effect types — everything beyond what data packs alone can provide. This page walks through the Gradle setup required to compile against Silent Gear and Silent Lib.
+
+## Prerequisites
+
+- A working NeoForge mod development environment (NeoGradle, Java 21).
+- A GitHub account with a personal access token that has the `read:packages` scope. Silent Gear and Silent Lib are distributed through [GitHub Packages](https://github.com/SilentChaos512/silent-gear/packages).
+
+## Generating a GitHub token
+
+<Steps>
+  <Step title="Open token settings">
+    Go to [https://github.com/settings/tokens](https://github.com/settings/tokens) and click **Generate new token**.
+  </Step>
+  <Step title="Select the read:packages scope">
+    Check the **read:packages** checkbox. No other scopes are required for dependency resolution.
+  </Step>
+  <Step title="Generate and copy the token">
+    Click **Generate token** and copy the value immediately — GitHub will not show it again.
+  </Step>
+</Steps>
+
+## Adding credentials to gradle.properties
+
+Store your GitHub username and token in the **personal** `gradle.properties` file (not the one inside your project). This keeps credentials out of source control.
+
+| Platform | Location |
+|----------|----------|
+| Windows  | `C:\Users\YOUR_USERNAME\.gradle\gradle.properties` |
+| macOS / Linux | `~/.gradle/gradle.properties` |
+
+Create the file if it does not exist, then add:
+
+```gradle ~/.gradle/gradle.properties
+// Your GitHub username
+gpr.username=YourGitHubUsername
+
+// Your GitHub generated token (read:packages scope)
+gpr.token=paste_your_token_here
+```
+
+<Warning>
+  Never commit this file or the token value to a public repository. The personal `gradle.properties` file is outside your project root and is not tracked by Git.
+</Warning>
+
+## Configuring build.gradle
+
+### Authentication helper
+
+Declare a credentials closure near the top of your `build.gradle` to avoid repeating it in every repository block:
+
+```groovy build.gradle
+// Authentication details for GitHub packages
+def gpr_creds = {
+    username = property('gpr.username')
+    password = property('gpr.token')
+}
+```
+
+### Repositories
+
+Add all three GitHub Packages repositories:
+
+```groovy build.gradle
+repositories {
+    maven {
+        url = uri("https://maven.pkg.github.com/silentchaos512/silent-gear")
+        credentials gpr_creds
+    }
+    maven {
+        url = uri("https://maven.pkg.github.com/silentchaos512/silentlib")
+        credentials gpr_creds
+    }
+    maven {
+        url = uri("https://maven.pkg.github.com/silentchaos512/silent-utils")
+        credentials gpr_creds
+    }
+}
+```
+
+<Note>
+  The Silent Lib repository is named `silentlib` (no hyphen). This is a legacy naming convention from when the repository was created.
+</Note>
+
+### Dependencies
+
+Add compile-time dependencies for Silent Gear and Silent Lib. The `exclude module` lines prevent transitive dependency conflicts with NeoForge, JEI, and Curios:
+
+```groovy build.gradle
+dependencies {
+    // Version format: "MC_VERSION-MOD_VERSION"
+    // Available builds: https://github.com/SilentChaos512/silent-gear/packages
+    // The "exclude module" lines will prevent import errors in some cases
+    compile fg.deobf("net.silentchaos512:silent-gear:1.21.1-4.+") {
+        exclude module: 'forge'
+        exclude module: 'jei-1.18.2'
+        exclude module: 'silent-lib'
+        exclude module: 'curios-forge'
+    }
+
+    // https://github.com/SilentChaos512/silentlib/packages
+    compile fg.deobf("net.silentchaos512:silent-lib:1.21.1-10.+") {
+        exclude module: "forge"
+    }
+}
+```
+
+The version strings above target the current release line:
+
+| Artifact | Version string | Source |
+|----------|---------------|--------|
+| `silent-gear` | `1.21.1-4.+` | `minecraft_version=1.21.1`, `mod_version=4.1.6.1` |
+| `silent-lib` | `1.21.1-10.+` | `silentlib_version=10.+` |
+
+Using `4.+` and `10.+` as the mod version suffix means Gradle will resolve the latest published patch in that minor series automatically. Pin to an exact version (e.g., `1.21.1-4.1.6.1`) if you need a reproducible build.
+
+<Tip>
+  Adding `silent-utils` as a direct dependency is not necessary — `silent-lib` brings it in transitively.
+</Tip>
+
+## Next steps
+
+Once your project compiles against Silent Gear, you can start extending the API:
+
+- [Creating custom gear types](/addons/custom-gear-types)
+- [Adding custom part types](/addons/custom-part-types)
+- [Implementing custom trait effects](/addons/custom-trait-effects)

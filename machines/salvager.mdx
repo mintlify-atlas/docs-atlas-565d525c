@@ -1,0 +1,66 @@
+---
+title: "Salvager: disassemble gear to recover materials"
+description: "The Salvager breaks down Silent Gear items and parts into their component materials. Loss rates are configurable and scale with remaining durability."
+---
+
+The Salvager takes gear items or parts and breaks them down into the materials they were made from. It is useful for recovering materials from gear you no longer need, repurposing parts from one item into another, or salvaging a piece of gear before it breaks completely.
+
+## How salvaging works
+
+Place a gear item or a salvageable part into the Salvager's single input slot. The machine processes the item over roughly ten seconds and deposits the recovered materials into up to 18 output slots.
+
+<Note>
+The amount recovered is not guaranteed. Each material has a chance of being lost during salvage, and that chance scales with the gear's current damage. A nearly-broken item returns far less than a freshly crafted one.
+</Note>
+
+### Loss rate
+
+The loss rate is interpolated between two configurable values based on how damaged the item is:
+
+- **`salvager.part_loss_rate.min`** — loss rate when the item is at full durability (default `0.0`, meaning no loss)
+- **`salvager.part_loss_rate.max`** — loss rate when the item is at zero durability (default `0.5`, meaning up to 50% of materials may be lost)
+
+For example, with defaults, a sword at 50% durability has a ~25% chance to lose each material. Salvage gear before it gets too damaged to maximize your return.
+
+### Breaking down parts
+
+By default, the Salvager returns **parts** rather than raw materials when salvaging gear. For example, salvaging a pickaxe returns its head, handle, and binding as part items.
+
+You can then feed those parts back into the Salvager individually to break them down further into their component materials.
+
+If you want the Salvager to skip the intermediate step and return raw materials directly, enable the `salvager.break_down_parts_with_gear` config option (default `false`). When enabled, any parts returned by a gear item are automatically broken down into materials in the same salvage operation.
+
+## Salvaging compound parts
+
+Compound parts (parts made from compound alloy materials) can also be salvaged using a dedicated salvage recipe. This recipe is defined in the `recipe/salvage/` data folder and handles the `compound_part` salvage type.
+
+## Usage
+
+<Steps>
+  <Step title="Place the Salvager">
+    Craft and place the Salvager. It faces the direction opposite to where you were looking when placed.
+  </Step>
+  <Step title="Insert gear or a part">
+    Right-click to open the GUI. Place one gear item or part into the single input slot on the left.
+  </Step>
+  <Step title="Wait for processing">
+    The progress bar fills over approximately ten seconds. The recovered items appear in the 18 output slots on the right.
+  </Step>
+  <Step title="Collect the output">
+    Take the recovered materials or parts from the output slots. If you received parts and want raw materials, insert those parts and salvage them again (or enable `break_down_parts_with_gear` in config).
+  </Step>
+</Steps>
+
+## Config reference
+
+All options are under the `salvager` section in the Silent Gear common config file.
+
+| Option | Default | Description |
+|---|---|---|
+| `part_loss_rate.min` | `0.0` | Loss rate at full durability. `0` = no loss. |
+| `part_loss_rate.max` | `0.5` | Loss rate at zero durability. `1` = complete loss. |
+| `break_down_parts_with_gear` | `false` | If true, parts returned by gear are automatically broken down into materials. |
+
+<Warning>
+Setting `part_loss_rate.max` to `1.0` means a fully broken item will return nothing. If you want a safety net, keep the max value below `1.0`.
+</Warning>

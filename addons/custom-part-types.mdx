@@ -1,0 +1,183 @@
+---
+title: 'Adding custom part slot types to a Silent Gear add-on'
+description: 'Create new part slot types for Silent Gear items through the Java add-on API using PartType.Builder and DeferredRegister to register them.'
+---
+
+A `PartType` represents a slot on a gear item that can hold a crafted compound part — the tip, grip, binding, rod, and so on. Add-on mods can define entirely new part slots with custom compound part items, removability rules, upgrade behavior, and per-item limits. Once registered, materials can declare which part types they provide values for through data-pack JSON.
+
+## What PartType defines
+
+`PartType` is a plain record registered in `SgRegistries.PART_TYPE`. It answers three questions:
+
+1. **What item carries this part?** The `compoundPartItem` function maps a `GearType` to the `CompoundPartItem` that crafters use to assemble parts of this type.
+2. **Is this slot removable?** Removable parts (grip, tip, coating, etc.) can be extracted from gear without destroying them.
+3. **Is this an upgrade?** Upgrade parts (e.g., `misc_upgrade`) occupy a separate category and can stack up to `maxPerItem` per piece of gear.
+
+```java
+// PartType.java (simplified record fields)
+public record PartType(
+    boolean isRemovable,
+    boolean isUpgrade,
+    int maxPerItem,
+    @Nullable Function<GearType, Optional<CompoundPartItem>> compoundParts
+) { ... }
+```
+
+## PartType.Builder API
+
+| Method | Description |
+|--------|-------------|
+| `PartType.Builder.builder()` | Creates a new builder with defaults: not removable, not an upgrade, `maxPerItem = 1`. |
+| `.compoundPartItem(Supplier<CompoundPartItem>)` | Provides a single item used as the compound part for all gear types. |
+| `.compoundPartItem(Function<GearType, Optional<CompoundPartItem>>)` | Provides a function that returns a different item per gear type, or `Optional.empty()` if this part type does not apply to the given type. |
+| `.isRemovable(boolean)` | When `true`, the part can be removed from gear using the Mod Kit or part swap recipe. Defaults to `false`. |
+| `.isUpgrade(boolean)` | When `true`, the part is treated as an upgrade slot. Defaults to `false`. |
+| `.maxPerItem(int)` | Maximum number of this part type that can be applied to a single gear item. Defaults to `1`. |
+
+## Registering a custom part type
+
+Use `DeferredRegister` against `SgRegistries.PART_TYPE`. The following example adds a **lens** part type — a removable optics slot for ranged weapons:
+
+```java
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
+import net.silentchaos512.gear.api.part.PartType;
+import net.silentchaos512.gear.setup.SgRegistries;
+
+public class MyPartTypes {
+    public static final DeferredRegister<PartType> REGISTRAR =
+            DeferredRegister.create(SgRegistries.PART_TYPE, MyMod.MOD_ID);
+
+    public static final DeferredHolder<PartType, PartType> LENS =
+            REGISTRAR.register("lens", () -> new PartType(
+                    PartType.Builder.builder()
+                            .compoundPartItem(() -> MyItems.LENS_PART.get())
+                            .isRemovable(true)
+            ));
+}
+```
+
+Register the `DeferredRegister` on the mod event bus:
+
+```java
+@Mod(MyMod.MOD_ID)
+public class MyMod {
+    public MyMod(IEventBus modBus) {
+        MyPartTypes.REGISTRAR.register(modBus);
+        MyItems.REGISTRAR.register(modBus);
+    }
+}
+```
+
+## Providing the compound part item
+
+Every non-trivial part type needs a corresponding `CompoundPartItem`. This is the item players craft and place into the gear slot. Silent Gear's built-in `CompoundPartItem` can be used directly:
+
+```java
+import net.minecraft.world.item.Item;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.silentchaos512.gear.item.CompoundPartItem;
+
+public class MyItems {
+    public static final DeferredRegister<Item> REGISTRAR =
+            DeferredRegister.create(BuiltInRegistries.ITEM, MyMod.MOD_ID);
+
+    public static final DeferredHolder<Item, CompoundPartItem> LENS_PART =
+            REGISTRAR.register("lens_part", () ->
+                    new CompoundPartItem(MyPartTypes.LENS, new Item.Properties())
+            );
+}
+```
+
+The `CompoundPartItem` constructor takes a `Supplier<PartType>` and standard `Item.Properties`. It handles tooltip rendering, material data storage, and gear compatibility checks automatically.
+
+<Note>
+  `compoundPartItem` accepts a `Supplier`, so the reference is resolved lazily. Both the part type and its item can reference each other without causing circular initialization issues as long as both are registered before the game starts.
+</Note>
+
+## Gear-type–specific compound parts
+
+If the part type should use different items for different gear types (for example, a ranged-weapon-only lens that should not appear on swords), use the `Function<GearType, Optional<CompoundPartItem>>` overload:
+
+```java
+import net.silentchaos512.gear.api.item.GearType;
+import net.silentchaos512.gear.setup.gear.GearTypes;
+
+public static final DeferredHolder<PartType, PartType> LENS =
+        REGISTRAR.register("lens", () -> new PartType(
+                PartType.Builder.builder()
+                        .compoundPartItem(gearType -> {
+                            if (gearType.matches(GearTypes.RANGED_WEAPON.get())) {
+                                return Optional.of(MyItems.LENS_PART.get());
+                            }
+                            return Optional.empty();
+                        })
+                        .isRemovable(true)
+        ));
+```
+
+When the function returns `Optional.empty()` for a given gear type, that gear type cannot accept this part.
+
+## Localization
+
+Silent Gear generates the display name for a part type using the translation key pattern:
+
+```
+part.<namespace>.type.<path>
+```
+
+For the lens example, add an entry to your `lang/en_us.json`:
+
+```json
+{
+    "part.mymod.type.lens": "Lens"
+}
+```
+
+## Declaring material compatibility in data packs
+
+Once the part type is registered in Java, materials specify support for new part types through their JSON definition. Add the new part type's registry name as a key in the `properties` map of the material JSON (alongside existing part type keys like `silentgear:main` and `silentgear:rod`):
+
+```json data/mymod/silentgear_materials/crystal_lens.json
+{
+  "type": "silentgear:simple",
+  "crafting": {
+    "ingredient": { "item": "mymod:crystal_lens" },
+    "categories": ["gem"]
+  },
+  "display": {
+    "name": { "text": "Crystal Lens" },
+    "color": "#A8D8FF",
+    "main_texture_type": "gem"
+  },
+  "properties": {
+    "mymod:lens": {
+      "silentgear:durability": { "value": 120.0, "op": "add" }
+    }
+  }
+}
+```
+
+<Tip>
+  A material only contributes values for part types whose IDs appear as keys in its `properties` map. If a material has no entry for `mymod:lens`, it cannot be used to craft a lens compound part.
+</Tip>
+
+## Built-in part types
+
+The following part types ship with Silent Gear for reference:
+
+| Registry name | Removable | Upgrade | Max per item | Notes |
+|---------------|-----------|---------|--------------|-------|
+| `silentgear:main` | No | No | 1 | The primary material part. |
+| `silentgear:rod` | No | No | 1 | Handle rod. |
+| `silentgear:tip` | Yes | No | 1 | Tool tip overlay. |
+| `silentgear:binding` | Yes | No | 1 | Binding around the handle. |
+| `silentgear:grip` | Yes | No | 1 | Grip wrap. |
+| `silentgear:coating` | Yes | No | 1 | Surface coating. |
+| `silentgear:lining` | Yes | No | 1 | Armor lining. |
+| `silentgear:setting` | Yes | No | 1 | Gem or stone setting. |
+| `silentgear:cord` | No | No | 1 | Bow/crossbow string. |
+| `silentgear:fletching` | No | No | 1 | Arrow fletching. |
+| `silentgear:misc_upgrade` | Yes | Yes | 256 | Generic upgrade slot. |

@@ -1,0 +1,117 @@
+---
+title: "Blueprints and templates: how to craft your gear parts"
+description: "Blueprints and templates replace standard crafting recipes. Blueprints are reusable; templates are single-use. A starter package is given on first join."
+---
+
+Silent Gear does not use standard shaped crafting recipes for gear. Instead, every part is crafted by combining a **blueprint** or **template** with material items. This system decouples the recipe from the materials, letting you use any valid material without needing a separate recipe per material combination.
+
+## Blueprints vs. templates
+
+| | Blueprint | Template |
+|---|---|---|
+| **Consumed on use** | No — returned after crafting | Yes — single use |
+| **Rarity** | Uncommon (green name) | Common |
+| **Availability** | Blueprint package, crafted, loot | Crafted, loot |
+
+- A **blueprint** is the reusable form. After you craft a part with it, the blueprint is returned to your inventory. Use it as many times as you like.
+- A **template** is consumed during crafting. It functions identically to a blueprint but disappears after one use, making it less economical unless you only need a part once.
+
+<Note>
+The availability of blueprints vs. templates is configurable. Server operators can restrict crafting to blueprint-only, template-only, or both via the mod's config file.
+</Note>
+
+## Getting your first blueprints
+
+When you join a world for the first time, you automatically receive a **Blueprint Package**. Opening the package drops a curated set of starter blueprints into your inventory — enough to craft basic gear and get started.
+
+<Steps>
+  <Step title="Receive the blueprint package">
+    The Blueprint Package is given automatically on first world join. If you miss it, craft one or use `/give @s silentgear:blueprint_package`.
+  </Step>
+  <Step title="Open the package">
+    Right-click the Blueprint Package to unpack all starter blueprints directly into your inventory. The package itself is consumed.
+  </Step>
+  <Step title="Craft your first parts">
+    Take a blueprint and place it alongside material items in the crafting grid. The output is the corresponding compound part.
+  </Step>
+  <Step title="Assemble your gear">
+    Combine the crafted parts (main part + rod at minimum) in the crafting grid to produce the finished item.
+  </Step>
+</Steps>
+
+## Part blueprints
+
+Each blueprint targets a specific part type. The following part blueprint items are available:
+
+| Blueprint item | Template item | Part type crafted |
+|---|---|---|
+| Rod Blueprint | Rod Template | `rod` — handle for tools and weapons |
+| Tip Blueprint | Tip Template | `tip` — bonus stats on tool heads |
+| Coating Blueprint | Coating Template | `coating` — surface treatment layer |
+| Grip Blueprint | Grip Template | `grip` — handle wrap for weapons |
+| Binding Blueprint | Binding Template | `binding` — junction wrap |
+| Lining Blueprint | Lining Template | `lining` — armor interior padding |
+| Cord Blueprint | Cord Template | `cord` — string for bows and fishing rods |
+| Fletching Blueprint | Fletching Template | `fletching` — flights for arrows |
+
+Gear main parts (pickaxe head, sword blade, helmet plate, etc.) each have their own dedicated blueprint — you'll find these in the blueprint package and as loot. Gear blueprints follow the same consumed/returned logic.
+
+## Gear-specific blueprints
+
+In addition to the part blueprints listed above, there is a gear blueprint for every gear type in the mod. These blueprints are used to craft the main part (the head, blade, or plate) for each specific piece of gear:
+
+- **Harvest tools**: Pickaxe Head Blueprint, Shovel Head Blueprint, Axe Head Blueprint, etc.
+- **Weapons**: Sword Blade Blueprint, Bow Limb Blueprint, etc.
+- **Armor**: Helmet Plate Blueprint, Chestplate Plate Blueprint, etc.
+
+All gear blueprints are included in the starter Blueprint Package.
+
+## Blueprint Book
+
+The **Blueprint Book** is a storage item that holds blueprints and templates in a dedicated inventory. It keeps your blueprint collection organized without filling your main inventory or chests.
+
+<Tip>
+Keep your Blueprint Book in your hotbar. You can pull blueprints directly from it when crafting at a workbench, so you don't need to carry individual blueprints loose.
+</Tip>
+
+## Gear Smithing Table
+
+The **Gear Smithing Table** is a custom block used for applying removable upgrade parts to finished gear. You bring your assembled gear and an upgrade part (tip, binding, coating, grip, lining, setting, or misc upgrade) to the table to attach the upgrade.
+
+The Gear Smithing Table is also where you **remove** upgrade parts — place the gear in the input slot to get the upgrade part back. The gear itself is never destroyed in the process.
+
+<Note>
+The Coating upgrade uses a dedicated **Coating Smithing Template** in the vanilla smithing table rather than the Gear Smithing Table. This smithing template is separate from the blueprint system.
+</Note>
+
+## Jeweler's Kit
+
+The **Jeweler's Kit** is a special blueprint-type item used specifically to apply **setting** parts to gear. It follows the same blueprint rules — it is not consumed after use — and requires the Setting blueprint to produce setting parts first.
+
+## Organizing blueprints
+
+<CardGroup cols={2}>
+  <Card title="Blueprint Book" icon="book">
+    Store all your blueprints and templates in one portable book. Access them directly from your hotbar during crafting.
+  </Card>
+  <Card title="Blueprint Package" icon="box">
+    The starter pack automatically delivered on first world join. Contains blueprints for all standard gear types and common part types.
+  </Card>
+</CardGroup>
+
+## Further reading
+
+<CardGroup cols={2}>
+  <Card title="Parts" href="/concepts/parts">
+    Understand how blueprints produce parts and how parts combine into gear.
+  </Card>
+  <Card title="Materials" href="/concepts/materials">
+    Learn which materials are valid for each part blueprint.
+  </Card>
+  <Card title="Gear Types" href="/concepts/gear-types">
+    See every gear type that has its own main part blueprint.
+  </Card>
+  <Card title="Traits" href="/concepts/traits">
+    Discover the traits that your chosen materials bring to crafted parts.
+  </Card>
+</CardGroup>

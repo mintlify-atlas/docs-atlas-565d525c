@@ -1,0 +1,174 @@
+---
+title: "Defining custom gear parts with data packs in JSON"
+description: "JSON schema reference for creating and overriding Silent Gear part definitions, including part types, crafting items, properties, and display data."
+---
+
+Parts are the intermediate crafted items that slot into gear at the Gear Smithing Table. A part definition specifies which item triggers it, which gear types it can be added to, any base property overrides it contributes beyond what materials provide, and how it is displayed. All definitions are JSON files loaded by `PartManager` at startup and reloaded with `/reload`.
+
+## File location
+
+```
+data/<namespace>/silentgear_parts/<id>.json
+```
+
+The resulting part ID is `<namespace>:<id>`. For example, `data/mypack/silentgear_parts/mythril_blade.json` produces `mypack:mythril_blade`.
+
+## Part serializer types
+
+The `type` field selects the serializer. Two types are available:
+
+| Type string | Serializer class | Description |
+|---|---|---|
+| `silentgear:core` | `CoreGearPart` | A main structural part (blade, head, handle, etc.) whose properties come from the materials packed inside a compound part item. Used for most craftable parts. |
+| `silentgear:upgrade` | `UpgradeGearPart` | An upgrade part (tip, lining, misc upgrade, etc.) that is added to finished gear. Can restrict which gear types it may be applied to via `upgrade_gear_types`. |
+
+## Top-level fields
+
+### `type`
+
+<ParamField path="type" type="string" required>
+  The serializer ID: `"silentgear:core"` or `"silentgear:upgrade"`.
+</ParamField>
+
+### `gear_type`
+
+<ParamField path="gear_type" type="string" required>
+  The gear type this part is associated with (e.g. `"silentgear:sword"`, `"silentgear:pickaxe"`, `"silentgear:all"`). For core parts, this controls which gear type the part belongs to. Use `"silentgear:all"` to make a part usable across gear types.
+</ParamField>
+
+### `part_type`
+
+<ParamField path="part_type" type="string" required>
+  The functional role of this part. Common values:
+
+  | Part type ID | Role |
+  |---|---|
+  | `silentgear:main` | Main structural part |
+  | `silentgear:rod` | Rod/handle |
+  | `silentgear:tip` | Tip upgrade |
+  | `silentgear:grip` | Grip upgrade |
+  | `silentgear:binding` | Binding |
+  | `silentgear:lining` | Armor lining upgrade |
+  | `silentgear:cord` | Bowstring / cord |
+  | `silentgear:fletching` | Arrow fletching |
+  | `silentgear:misc_upgrade` | Generic upgrade slot |
+</ParamField>
+
+### `upgrade_gear_types` (upgrade parts only)
+
+<ParamField path="upgrade_gear_types" type="object">
+  Only present on `silentgear:upgrade` parts. Defines which gear types this upgrade can be applied to. Uses a `GearTypeMatcher` object:
+
+  ```json
+  "upgrade_gear_types": {
+    "match_type": "any",
+    "types": ["silentgear:sword", "silentgear:katana"]
+  }
+  ```
+
+  `match_type` can be `"any"` (matches if the gear type is one of the listed types) or `"all"` (used with tag-like parent types).
+</ParamField>
+
+### `crafting`
+
+<ParamField path="crafting" type="object" required>
+  Crafting ingredient and salvage data:
+
+  - **`ingredient`** (`object`, required) — A standard Minecraft ingredient (the compound part item or specific item that represents this part).
+  - **`gear_type_blacklist`** (`array of strings`) — Gear type IDs that this part cannot be used to craft. Usually `[]`.
+  - **`can_salvage`** (`boolean`) — Whether the part can be recovered by salvaging gear. Defaults to `true`.
+</ParamField>
+
+### `display`
+
+<ParamField path="display" type="object" required>
+  Display name data:
+
+  - **`name`** (`text component`, required) — The display name of the part (e.g. `{"translate": "part.mypack.mythril_blade"}`).
+  - **`name_prefix`** (`text component`) — Optional prefix added before the gear name in tooltips.
+</ParamField>
+
+### `properties`
+
+<ParamField path="properties" type="object" required>
+  A `GearPropertyMap` — a flat map of **property ID** → **property value**. These are base property overrides applied by the part itself, on top of whatever the materials contribute. For most core parts this is empty (`{}`); upgrade parts use it to define their stat bonuses.
+
+  Each entry maps a property ID (see [material properties](/datapacks/materials#available-property-ids)) to a value object:
+
+  ```json
+  "properties": {
+    "silentgear:attack_damage": { "value": 1.0, "op": "add" }
+  }
+  ```
+</ParamField>
+
+<Note>
+  For `silentgear:core` parts, the bulk of the properties (durability, harvest speed, etc.) come from the **materials** packed inside the compound part item — not from the part definition itself. The `properties` field on a core part is used for overrides or bonuses that the part structure itself provides.
+</Note>
+
+## Complete example: core part definition
+
+This defines a new sword blade part for a hypothetical `mypack:mythril_blade` compound part item:
+
+```json data/mypack/silentgear_parts/mythril_blade.json
+{
+  "type": "silentgear:core",
+  "gear_type": "silentgear:sword",
+  "part_type": "silentgear:main",
+  "crafting": {
+    "ingredient": { "item": "mypack:mythril_blade" },
+    "gear_type_blacklist": [],
+    "can_salvage": true
+  },
+  "display": {
+    "name": { "translate": "part.mypack.mythril_blade" },
+    "name_prefix": { "text": "" }
+  },
+  "properties": {}
+}
+```
+
+## Complete example: upgrade part definition
+
+This defines a custom tip upgrade that boosts harvest speed and grants a trait when applied to any pickaxe or shovel:
+
+```json data/mypack/silentgear_parts/sharpened_tip.json
+{
+  "type": "silentgear:upgrade",
+  "gear_type": "silentgear:all",
+  "part_type": "silentgear:tip",
+  "upgrade_gear_types": {
+    "match_type": "any",
+    "types": ["silentgear:pickaxe", "silentgear:shovel"]
+  },
+  "crafting": {
+    "ingredient": { "item": "mypack:sharpened_tip_item" },
+    "gear_type_blacklist": [],
+    "can_salvage": true
+  },
+  "display": {
+    "name": { "translate": "part.mypack.sharpened_tip" },
+    "name_prefix": { "text": "Sharpened " }
+  },
+  "properties": {
+    "silentgear:harvest_speed": { "value": 2.0, "op": "add" },
+    "silentgear:traits": [
+      { "trait": "silentgear:sharp", "level": 1 }
+    ]
+  }
+}
+```
+
+<Tip>
+  The `silentgear:traits` property inside a part's `properties` map grants traits to the finished gear when this part is equipped, just like traits defined on materials.
+</Tip>
+
+## Part type constraints
+
+- A `silentgear:core` part can only be used to craft gear whose type matches `gear_type`. If `gear_type` is `"silentgear:all"`, it can be used in any gear.
+- An `silentgear:upgrade` part can only be **added** to gear whose type passes the `upgrade_gear_types` matcher. This is checked separately from `gear_type`, giving you fine-grained control over which finished items accept the upgrade.
+- A part will only appear in the Gear Smithing Table recipe for gear types that are not in `gear_type_blacklist`.
+
+<Warning>
+  The `part_type` field controls the functional slot, not the allowed gear types. Make sure `gear_type` (and `upgrade_gear_types` for upgrades) are set correctly, or the part will silently be unavailable in crafting.
+</Warning>

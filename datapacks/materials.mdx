@@ -1,0 +1,212 @@
+---
+title: "Defining custom materials with data packs in JSON"
+description: "JSON schema reference for creating and overriding Silent Gear material definitions, including properties, traits, categories, and display data."
+---
+
+Materials are the raw ingredient items that players put into compound parts before assembling gear. Each material definition controls which items can be used, what gear properties they contribute, which traits they grant, and how the finished gear looks. Definitions live entirely in JSON and are reloaded with `/reload`.
+
+## File location
+
+```
+data/<namespace>/silentgear_materials/<id>.json
+```
+
+The resulting material ID is `<namespace>:<id>`. For example, `data/mypack/silentgear_materials/mythril.json` produces `mypack:mythril`.
+
+## Material types
+
+The `type` field selects the material serializer. Silent Gear ships two types for use in data packs:
+
+| Type string | Serializer class | Description |
+|---|---|---|
+| `silentgear:simple` | `SimpleMaterial` | A straightforward material with a fixed ingredient and explicit property values. Most data pack materials use this type. |
+| `silentgear:compound` | `CompoundMaterial` | A material whose properties are derived at runtime from a stack of sub-materials (used for compound material items). Rarely defined directly in data packs. |
+
+## Top-level fields
+
+### `type`
+
+<ParamField path="type" type="string" required>
+  The serializer ID. Use `"silentgear:simple"` for most materials.
+</ParamField>
+
+### `parent`
+
+<ParamField path="parent" type="string">
+  Resource location of another material whose properties this one inherits. When a property is not defined on this material, Silent Gear falls back to the parent's value. Omit or set to `"silentgear:none"` for a root material.
+</ParamField>
+
+### `crafting`
+
+<ParamField path="crafting" type="object" required>
+  Crafting and ingredient data. Contains the following sub-fields:
+
+  - **`ingredient`** (`object`, required) — A standard Minecraft [ingredient](https://minecraft.wiki/w/Recipe#Ingredient) object (e.g. `{"item": "minecraft:iron_ingot"}` or a tag reference `{"tag": "c:ingots/iron"}`).
+  - **`categories`** (`array of strings`) — List of category IDs from the table below. Categories are used for material compatibility checks and the material grader.
+  - **`gear_type_blacklist`** (`array of strings`) — Gear type IDs that this material is forbidden from being used in. Usually empty (`[]`).
+  - **`part_substitutes`** (`object`) — Map of part-type ID → ingredient. When this material is used in a specific part type slot, the ingredient listed here acts as the substitute instead of the main ingredient. Used to make some materials fill a non-primary role (e.g. a material that acts as a rod when used in the rod slot). Omit or use `{}` if not needed.
+  - **`can_salvage`** (`boolean`) — Whether gear made with this material can be salvaged to recover it. Defaults to `true`.
+</ParamField>
+
+### `display`
+
+<ParamField path="display" type="object" required>
+  Display and visual data. Contains the following sub-fields:
+
+  - **`name`** (`text component`, required) — The display name. Can be a plain string (`{"text": "Mythril"}`) or a translation key (`{"translate": "material.mypack.mythril"}`).
+  - **`name_prefix`** (`text component`) — Optional prefix shown before the gear name (e.g. `"Mythril "`).
+  - **`color`** (`string`) — Hex color used to tint material textures, e.g. `"#4AEAB4"`. Defaults to white (`"#FFFFFF"`).
+  - **`main_texture_type`** (`string`) — Texture rendering hint. Common values: `"metal"`, `"rough"`, `"gem"`, `"wood"`, `"cloth"`. Affects which texture layer is applied to the gear model.
+</ParamField>
+
+### `properties`
+
+<ParamField path="properties" type="object" required>
+  A map of **part-type ID** → **property map**. The outer key is a part type (e.g. `"silentgear:main"`, `"silentgear:rod"`, `"silentgear:tip"`) and the value is an object mapping property IDs to their modifier values.
+
+  Each property value object contains:
+  - **`value`** (`number`) — The numeric modifier value.
+  - **`op`** (`string`) — The operation: `"add"` (flat addition), `"mul_base"` (multiply before other additions), or `"mul_total"` (multiply after all additions).
+</ParamField>
+
+## Available property IDs
+
+The following property IDs are registered by `GearProperties`:
+
+| Property ID | Description |
+|---|---|
+| `silentgear:durability` | Base durability (for main parts) |
+| `silentgear:armor_durability` | Armor durability multiplier |
+| `silentgear:repair_efficiency` | Multiplier for how much durability is restored when repaired |
+| `silentgear:repair_value` | Multiplier for the repair value this material provides |
+| `silentgear:enchantment_value` | Enchantability |
+| `silentgear:charging_value` | Charging value (used by special mechanics) |
+| `silentgear:rarity` | Rarity score |
+| `silentgear:harvest_tier` | Mining tier (stone, iron, diamond, etc.) |
+| `silentgear:harvest_speed` | Mining speed |
+| `silentgear:block_reach` | Block reach distance bonus |
+| `silentgear:attack_damage` | Melee attack damage |
+| `silentgear:attack_speed` | Attack speed |
+| `silentgear:attack_reach` | Melee attack reach bonus |
+| `silentgear:magic_damage` | Magic damage |
+| `silentgear:ranged_damage` | Ranged damage multiplier |
+| `silentgear:draw_speed` | Bow/crossbow draw speed multiplier |
+| `silentgear:projectile_speed` | Projectile speed multiplier |
+| `silentgear:projectile_accuracy` | Projectile accuracy |
+| `silentgear:armor` | Armor points |
+| `silentgear:armor_toughness` | Armor toughness |
+| `silentgear:knockback_resistance` | Knockback resistance |
+| `silentgear:magic_armor` | Magic armor |
+
+## Available category IDs
+
+Categories come from `MaterialCategories`. Use the lowercase name:
+
+`metal`, `gem`, `rock`, `dust`, `cloth`, `fiber`, `wood`, `organic`, `slime`, `sheet`, `intangible`, `basic`, `intermediate`, `advanced`, `endgame`
+
+You can also define custom category strings (e.g. `"mypack_crystal"`) — Silent Gear will create an anonymous category for any unknown string.
+
+## Complete example: new simple material
+
+```json data/mypack/silentgear_materials/mythril.json
+{
+  "type": "silentgear:simple",
+  "parent": "silentgear:none",
+  "crafting": {
+    "ingredient": { "tag": "c:ingots/mythril" },
+    "categories": ["metal", "advanced"],
+    "gear_type_blacklist": [],
+    "part_substitutes": {},
+    "can_salvage": true
+  },
+  "display": {
+    "name": { "translate": "material.mypack.mythril" },
+    "name_prefix": { "text": "Mythril " },
+    "color": "#4AEAB4",
+    "main_texture_type": "metal"
+  },
+  "properties": {
+    "silentgear:main": {
+      "silentgear:durability": { "value": 2400.0, "op": "add" },
+      "silentgear:harvest_tier": { "value": 3.0, "op": "add" },
+      "silentgear:harvest_speed": { "value": 9.0, "op": "add" },
+      "silentgear:attack_damage": { "value": 3.0, "op": "add" },
+      "silentgear:attack_speed": { "value": -0.1, "op": "add" },
+      "silentgear:enchantment_value": { "value": 20.0, "op": "add" },
+      "silentgear:rarity": { "value": 50.0, "op": "add" },
+      "silentgear:repair_value": { "value": 1.0, "op": "add" },
+      "silentgear:traits": [
+        { "trait": "silentgear:lustrous", "level": 2 }
+      ]
+    },
+    "silentgear:rod": {
+      "silentgear:durability": { "value": 0.35, "op": "mul_total" },
+      "silentgear:harvest_speed": { "value": 0.1, "op": "mul_total" },
+      "silentgear:repair_value": { "value": 1.0, "op": "add" }
+    }
+  }
+}
+```
+
+<Note>
+  Traits are listed under the `silentgear:traits` property key inside the property map for a given part type, not as a top-level field. The value is a list of objects with `"trait"` (resource location) and `"level"` (integer).
+</Note>
+
+## Complete example: overriding an existing material
+
+To override an existing built-in material, use the same namespace and path as the original. The following increases iron's durability and grants it an extra trait level:
+
+```json data/silentgear/silentgear_materials/iron.json
+{
+  "type": "silentgear:simple",
+  "parent": "silentgear:none",
+  "crafting": {
+    "ingredient": { "tag": "c:ingots/iron" },
+    "categories": ["metal", "basic"],
+    "gear_type_blacklist": [],
+    "part_substitutes": {},
+    "can_salvage": true
+  },
+  "display": {
+    "name": { "translate": "material.silentgear.iron" },
+    "color": "#D8D8D8",
+    "main_texture_type": "metal"
+  },
+  "properties": {
+    "silentgear:main": {
+      "silentgear:durability": { "value": 400.0, "op": "add" },
+      "silentgear:harvest_tier": { "value": 2.0, "op": "add" },
+      "silentgear:harvest_speed": { "value": 6.0, "op": "add" },
+      "silentgear:attack_damage": { "value": 2.0, "op": "add" },
+      "silentgear:attack_speed": { "value": -0.1, "op": "add" },
+      "silentgear:enchantment_value": { "value": 14.0, "op": "add" },
+      "silentgear:rarity": { "value": 14.0, "op": "add" },
+      "silentgear:repair_value": { "value": 1.0, "op": "add" },
+      "silentgear:traits": [
+        { "trait": "silentgear:magnetic", "level": 2 }
+      ]
+    },
+    "silentgear:rod": {
+      "silentgear:durability": { "value": 0.3, "op": "mul_total" },
+      "silentgear:harvest_speed": { "value": 0.1, "op": "mul_total" },
+      "silentgear:repair_value": { "value": 1.0, "op": "add" }
+    }
+  }
+}
+```
+
+<Warning>
+  Placing this file at `data/silentgear/silentgear_materials/iron.json` in your data pack completely replaces the built-in iron material. Every field must be specified — missing fields are not merged from the original.
+</Warning>
+
+## Part substitute example
+
+`part_substitutes` lets a material fill in for a specific part type. For instance, a material that can substitute for a rod part:
+
+```json
+"part_substitutes": {
+  "silentgear:rod": { "item": "minecraft:stick" }
+}
+```
+
+This means when a player uses a stick as a rod ingredient, this material's rod properties apply.

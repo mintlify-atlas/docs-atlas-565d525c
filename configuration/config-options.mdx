@@ -1,0 +1,209 @@
+---
+title: "Silent Gear common config file reference"
+description: "Reference for all Silent Gear config options — blueprints, gear behavior, repair kits, salvager, starlight charger, material grader, and debug settings."
+---
+
+Silent Gear's server-side configuration lives in a single **common config** file, typically found at `config/silentgear-common.toml` in your instance folder. Changes to most options take effect on the next world load; a few (marked below) require a full game restart.
+
+## Blueprints
+
+These options control blueprint and template item behavior under the `[item.blueprint]` group.
+
+| Config key | Type | Default | Description |
+|---|---|---|---|
+| `item.blueprint.types_allowed` | enum | `BOTH` | Which blueprint types players can use. Valid values: `BOTH`, `BLUEPRINT`, `TEMPLATE`. |
+| `item.blueprint.spawn_with_starter_blueprints` | boolean | `true` | Give new players a blueprint package on first world join. The package grants several blueprints when right-clicked. Override the `starter_blueprints` loot table to customize what is given. |
+
+## Material Book
+
+Options under the `[item.material_book]` group.
+
+| Config key | Type | Default | Description |
+|---|---|---|---|
+| `item.material_book.spawn_with_material_book` | boolean | `true` | Give new players a material book when they join the world for the first time. |
+
+## Compounds
+
+Options under the `[compounds]` group that affect compound materials and the Crude Mixer.
+
+| Config key | Type | Default | Description |
+|---|---|---|---|
+| `compounds.crude_mixer.property_multiplier` | double | `0.8` | Multiplier applied to numerical properties for crude alloys made in the Crude Mixer. Values below `1.0` reduce properties; values above `1.0` increase them. Range: `0.0`–`2.0`. |
+
+## Nerfed Gear
+
+Options under the `[nerfed_items]` group. This feature penalizes vanilla and other mod tools to encourage use of Silent Gear equipment. **Requires a game restart to take effect.**
+
+| Config key | Type | Default | Description |
+|---|---|---|---|
+| `nerfed_items.enabled` | boolean | `false` | Master toggle. If `false`, all other settings in this group are ignored. |
+| `nerfed_items.durability_multiplier` | double | `0.05` | Multiplies max durability of nerfed items by this value. If the result is zero, a value of 1 is used instead. Range: `0`–`1`. |
+| `nerfed_items.harvest_speed_multiplier` | double | `0.5` | Multiplies the harvest speed of nerfed items by this value. Range: `0`–`1`. |
+| `nerfed_items.items` | list | *(vanilla tools)* | List of item IDs (`namespace:path`) that receive the durability and speed penalties. |
+
+<Note>
+  The default `nerfed_items.items` list targets standard vanilla tool and armor items. You can add any item registered under a valid resource location, including those from other mods.
+</Note>
+
+## Gear
+
+Options under the `[gear]` group that affect tools, weapons, and armor behavior.
+
+### General
+
+| Config key | Type | Default | Description |
+|---|---|---|---|
+| `gear.allow_conversion_recipes` | boolean | `true` | Enable conversion recipes (`silentgear:conversion` type). For example, placing a vanilla stone pickaxe in a crafting grid to get a Silent Gear stone pickaxe. Also affects recipes added by data packs and other mods. |
+| `gear.send_broken_message` | boolean | `true` | Display a chat message notifying the player when a gear item breaks, with a hint that it can be repaired. |
+| `gear.damage_factor_levels` | int | `10` | How frequently gear recalculates properties as it takes damage. Higher values mean more recalculations, allowing traits to update property values more often. Min: `1`. |
+| `gear.breaks_permanently` | boolean | `false` | If `true`, gear breaks permanently like vanilla tools and armor instead of entering a broken state that can be repaired. |
+
+### Enchanting
+
+Options under `[gear.enchanting]`.
+
+| Config key | Type | Default | Description |
+|---|---|---|---|
+| `gear.enchanting.allow_enchanting` | boolean | `true` | Allow gear items to be enchanted through normal means (enchanting table, anvil, etc.). Other mods may still apply enchantments regardless of this setting. Existing enchantments are not removed when this is set to `false`. |
+| `gear.enchanting.force_remove_enchantments` | boolean | `false` | Forcibly remove all enchantments from gear during property recalculations. Enchantments granted by traits are not removed. Only affects items currently in a player's inventory. |
+
+### AOE Tools (Hammer & Excavator)
+
+Options under `[gear.aoe_tool]`. Match modes determine which blocks are considered similar enough to be mined together.
+
+| Config key | Type | Default | Description |
+|---|---|---|---|
+| `gear.aoe_tool.match_mode.standard` | enum | `MODERATE` | Match mode for most blocks. |
+| `gear.aoe_tool.match_mode.ores` | enum | `STRICT` | Match mode for ore blocks (anything in the `forge:ores` block tag). |
+
+**Match mode values:**
+
+| Value | Behavior |
+|---|---|
+| `LOOSE` | Break any block (not recommended) |
+| `MODERATE` | Break blocks with the same harvest level |
+| `STRICT` | Break only the exact same block type |
+
+### Prospector Hammer
+
+Options under `[gear.prospector_hammer]`.
+
+| Config key | Type | Default | Description |
+|---|---|---|---|
+| `gear.prospector_hammer.range` | int | `16` | Search radius in blocks the prospector hammer uses when scanning for blocks of interest. Range: `0`–`64`. |
+
+### Saw
+
+Options under `[gear.saw]`.
+
+| Config key | Type | Default | Description |
+|---|---|---|---|
+| `gear.saw.recursion_depth` | int | `200` | Maximum number of blocks the saw will search when felling trees. Decrease this value if you encounter stack overflow exceptions. Increasing is allowed but not recommended. Min: `0`. |
+
+### Repairs
+
+Options under `[gear.repairs]`.
+
+| Config key | Type | Default | Description |
+|---|---|---|---|
+| `gear.repairs.anvil_effectiveness` | double | `0.5` | Effectiveness of gear repairs performed in an anvil. Set to `0` to disable anvil repairs entirely. Range: `0`–`1`. |
+
+### Upgrades
+
+Options under `[gear.upgrades]`.
+
+| Config key | Type | Default | Description |
+|---|---|---|---|
+| `gear.upgrades.apply_in_anvil_only` | boolean | `false` | If `true`, upgrade parts may only be applied to gear in an anvil. |
+| `gear.upgrades.destroy_swapped_parts` | boolean | `false` | If `true`, parts removed when swapping in the crafting grid are destroyed rather than returned to the player. |
+
+## Repair Kits
+
+Options under `[item.repair_kits]`. Repair kits store loose materials that can be used to repair gear in the field.
+
+### Capacity
+
+Capacity is the number of material units each kit can hold across all types combined. Setting any value to `0` makes that kit tier unusable.
+
+Options under `[item.repair_kits.capacity]`.
+
+| Config key | Type | Default | Description |
+|---|---|---|---|
+| `item.repair_kits.capacity.very_crude` | int | `8` | Material capacity of the Very Crude Repair Kit. |
+| `item.repair_kits.capacity.crude` | int | `16` | Material capacity of the Crude Repair Kit. |
+| `item.repair_kits.capacity.sturdy` | int | `32` | Material capacity of the Sturdy Repair Kit. |
+| `item.repair_kits.capacity.crimson` | int | `48` | Material capacity of the Crimson Repair Kit. |
+| `item.repair_kits.capacity.azure` | int | `64` | Material capacity of the Azure Repair Kit. |
+
+### Efficiency
+
+Efficiency is the fraction of the repair value actually applied. Higher values mean fewer materials are consumed per repair point. Setting any value to `0` makes that tier unusable.
+
+Options under `[item.repair_kits.efficiency]`.
+
+| Config key | Type | Default | Description |
+|---|---|---|---|
+| `item.repair_kits.efficiency.very_crude` | double | `0.3` | Repair efficiency of the Very Crude Repair Kit. Range: `0`–`10`. |
+| `item.repair_kits.efficiency.crude` | double | `0.35` | Repair efficiency of the Crude Repair Kit. Range: `0`–`10`. |
+| `item.repair_kits.efficiency.sturdy` | double | `0.4` | Repair efficiency of the Sturdy Repair Kit. Range: `0`–`10`. |
+| `item.repair_kits.efficiency.crimson` | double | `0.45` | Repair efficiency of the Crimson Repair Kit. Range: `0`–`10`. |
+| `item.repair_kits.efficiency.azure` | double | `0.5` | Repair efficiency of the Azure Repair Kit. Range: `0`–`10`. |
+| `item.repair_kits.efficiency.missing` | double | `0.0` | Repair efficiency when using loose materials without any repair kit. Setting a value greater than `0` makes repair kits optional. Range: `0`–`10`. |
+
+## Material Grader
+
+Options under `[material_grader]` that control how the material grader assigns grades to materials.
+
+| Config key | Type | Default | Description |
+|---|---|---|---|
+| `material_grader.median_grade` | enum | `C` | The median (most common) grade produced by a material grader with a tier 1 catalyst. Each additional catalyst tier raises the median by one grade (e.g., tier 2 → B, tier 3 → A). |
+| `material_grader.standard_deviation` | double | `1.5` | Standard deviation of the grade distribution. Larger values make both higher and lower grades more common. Extremely large values may break the distribution. Range: `0.0`–`100.0`. |
+| `material_grader.can_grade_parts` | boolean | `false` | If enabled, the material grader can grade individual materials stored inside a gear part. |
+
+## Traits
+
+| Config key | Type | Default | Description |
+|---|---|---|---|
+| `trait.item_magnet.disable_on_crouch` | boolean | `true` | Disable the magnetic pull effect of the Item Magnet trait while the player is crouching or sneaking. |
+
+## Salvager
+
+Options under `[salvager]` that control material loss when breaking down gear.
+
+| Config key | Type | Default | Description |
+|---|---|---|---|
+| `salvager.part_loss_rate.min` | double | `0.0` | Minimum fraction of parts lost when salvaging. `0` means no loss; `1` means complete loss. The actual rate depends on the item's remaining durability. Range: `0`–`1`. |
+| `salvager.part_loss_rate.max` | double | `0.5` | Maximum fraction of parts lost when salvaging. `0` means no loss; `1` means complete loss. The actual rate depends on the item's remaining durability. Range: `0`–`1`. |
+| `salvager.break_down_parts_with_gear` | boolean | `false` | If enabled, the salvager automatically breaks down returned gear parts into their component materials. If disabled, parts are returned whole and can be salvaged separately. |
+
+<Tip>
+  The loss rate scales with damage: a fully repaired item loses parts at the **minimum** rate, while a nearly broken item loses parts at the **maximum** rate. Setting both to `0` ensures no material loss regardless of item condition.
+</Tip>
+
+## Starlight Charger
+
+Options under `[starlight_charger]` that control the block which charges materials at night.
+
+| Config key | Type | Default | Description |
+|---|---|---|---|
+| `starlight_charger.charge_rate` | int | `100` | Energy gathered per tick during the active work period. Min: `0`. |
+| `starlight_charger.max_charge` | int | `1000000` | Maximum energy the charger can store. Min: `0`. |
+| `starlight_charger.work_time` | enum | `NIGHTTIME` | Time of day during which the charger gathers energy. Values defined by `ChargerBlockEntity.WorkTime`. |
+| `starlight_charger.requires_view_of_sky` | boolean | `true` | If `true`, the charger only operates when it has an unobstructed view of the sky directly above it. |
+| `starlight_charger.can_charge_parts` | boolean | `false` | If enabled, the charger can apply charges to the individual materials stored inside a gear part. |
+
+## Debug
+
+| Config key | Type | Default | Description |
+|---|---|---|---|
+| `debug.logging.properties` | boolean | `false` | Write detailed gear property calculation logs to the log file every time gear properties are recalculated. Useful for diagnosing unexpected stat values. |
+
+<Warning>
+  Enabling `debug.logging.properties` can produce a large volume of log output in active gameplay. Disable it again once you have gathered the information you need.
+</Warning>
+
+## Other
+
+| Config key | Type | Default | Description |
+|---|---|---|---|
+| `other.show_wip_text` | boolean | `true` | Show a "WIP" (work in progress) label in the tooltip of certain unfinished but usable blocks and items. Set to `false` to hide this text. |

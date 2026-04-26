@@ -1,0 +1,446 @@
+---
+title: "Defining custom gear traits with data packs in JSON"
+description: "JSON schema reference for custom Silent Gear trait definitions, covering all effect types, condition types, and a complete working example."
+---
+
+Traits are passive effects that materials and parts grant to finished gear. A trait can add attribute modifiers, apply potion effects, passively repair gear, boost enchantments, and much more. Each trait definition is a single JSON file loaded by `TraitManager` at startup and reloaded with `/reload`.
+
+## File location
+
+```
+data/<namespace>/silentgear_traits/<id>.json
+```
+
+The resulting trait ID is `<namespace>:<id>`. For example, `data/mypack/silentgear_traits/swift_strike.json` produces `mypack:swift_strike`.
+
+## Top-level fields
+
+### `max_level`
+
+<ParamField path="max_level" type="integer" required>
+  The maximum level this trait can reach (must be ≥ 1). Many effects scale with the trait level, so higher values allow more powerful effects when multiple materials with the same trait are combined.
+</ParamField>
+
+### `name`
+
+<ParamField path="name" type="text component" required>
+  The display name shown in gear tooltips. Can be a plain string or a translation key:
+
+  ```json
+  "name": { "translate": "trait.mypack.swift_strike" }
+  ```
+</ParamField>
+
+### `description`
+
+<ParamField path="description" type="text component" required>
+  A short description shown when the player holds the trait description key (default: Shift). Supports translation keys.
+</ParamField>
+
+### `effects`
+
+<ParamField path="effects" type="array of objects" required>
+  List of effect objects that define what the trait actually does. Each object must have a `"type"` field identifying the effect serializer, plus any effect-specific fields. See the [effect types](#effect-types) section below.
+</ParamField>
+
+### `conditions`
+
+<ParamField path="conditions" type="array of objects">
+  Optional list of condition objects that gate when the trait is active. If any condition fails, the trait's effects are suppressed. See the [condition types](#condition-types) section below. Omit or use `[]` for an unconditional trait.
+</ParamField>
+
+### `extra_wiki_lines`
+
+<ParamField path="extra_wiki_lines" type="array of text components">
+  Optional lines of text appended to auto-generated wiki output. Has no in-game effect. Safe to omit.
+</ParamField>
+
+---
+
+## Effect types
+
+### `silentgear:attribute`
+
+Adds vanilla attribute modifiers to gear while it is equipped. Modifiers are keyed by a combined `<gear_type>/<equipment_slot_group>` string.
+
+```json
+{
+  "type": "silentgear:attribute",
+  "attribute_modifiers": {
+    "sword/any": [
+      {
+        "attribute": "minecraft:generic.attack_damage",
+        "values": [1.0, 2.0, 3.0],
+        "operation": "add_value"
+      }
+    ]
+  }
+}
+```
+
+<ParamField path="attribute_modifiers" type="object">
+  Map of `"<gear_type>/<slot_group>"` → list of modifier objects. Each modifier has:
+  - **`attribute`** — Vanilla attribute resource location.
+  - **`values`** — List of float values indexed by trait level (level 1 uses index 0, level 2 uses index 1, etc.).
+  - **`operation`** — One of `"add_value"`, `"add_multiplied_base"`, or `"add_multiplied_total"`.
+
+  Valid slot group names: `any`, `mainhand`, `offhand`, `hand`, `head`, `chest`, `legs`, `feet`, `armor`, `body`.
+</ParamField>
+
+---
+
+### `silentgear:self_repair`
+
+Passively restores durability to the gear once per second while the item is equipped or in the player's inventory.
+
+```json
+{
+  "type": "silentgear:self_repair",
+  "activation_chance": 0.1,
+  "repair_amount": 1
+}
+```
+
+<ParamField path="activation_chance" type="float">
+  Probability per second **per trait level** of triggering a repair tick. `0.1` at level 1 = 10% chance/second; at level 3 = 30% chance/second.
+</ParamField>
+
+<ParamField path="repair_amount" type="integer">
+  Durability points restored per activation. Use a negative value to drain durability instead.
+</ParamField>
+
+---
+
+### `silentgear:enchantment`
+
+Simulates having one or more enchantments on the gear by contributing their levels to `GetEnchantmentLevelEvent`. The enchantments are not physically stored on the item but behave as if they were.
+
+```json
+{
+  "type": "silentgear:enchantment",
+  "enchantments": {
+    "minecraft:fortune": [1, 2, 3]
+  }
+}
+```
+
+<ParamField path="enchantments" type="object">
+  Map of enchantment resource key → level list. The list is indexed by trait level (level 1 → index 0). You can also provide a single integer instead of a list if the level does not scale: `"minecraft:silk_touch": 1`.
+</ParamField>
+
+---
+
+### `silentgear:wielder_effect`
+
+Applies potion effects to the player while the gear is equipped. Supports scaling by trait level, armor piece count, or full-set requirement.
+
+```json
+{
+  "type": "silentgear:wielder_effect",
+  "potion_effects": {
+    "silentgear:sword": [
+      {
+        "type": "trait_level",
+        "effect": "minecraft:strength",
+        "duration": 40,
+        "levels": [1, 2]
+      }
+    ]
+  }
+}
+```
+
+<ParamField path="potion_effects" type="object">
+  Map of gear-type ID → list of `PotionData` objects. Each `PotionData` has:
+  - **`type`** (`string`) — `"trait_level"` (scales with trait level), `"piece_count"` (scales with armor pieces worn), or `"full_set_only"` (requires all 4 armor pieces).
+  - **`effect`** (`string`) — Mob effect resource location.
+  - **`duration`** (`integer`) — Duration in ticks.
+  - **`levels`** (`array of integers`) — Amplifier values, indexed by trait level or piece count depending on `type`.
+</ParamField>
+
+---
+
+### `silentgear:target_effect`
+
+Applies potion effects to the entity that was hit when the wielder attacks, scaled by trait level.
+
+```json
+{
+  "type": "silentgear:target_effect",
+  "effects_by_level": {
+    "silentgear:sword": {
+      "1": [
+        { "id": "minecraft:slowness", "duration": 60, "amplifier": 0 }
+      ],
+      "2": [
+        { "id": "minecraft:slowness", "duration": 80, "amplifier": 1 }
+      ]
+    }
+  }
+}
+```
+
+<ParamField path="effects_by_level" type="object">
+  Map of gear-type ID → map of trait-level string → list of `MobEffectInstance` objects. Effect instances use the standard `{ "id": "...", "duration": N, "amplifier": N }` format.
+</ParamField>
+
+---
+
+### `silentgear:bonus_drops`
+
+Adds a chance to drop extra copies of mined items. Chance and multiplier scale with trait level.
+
+```json
+{
+  "type": "silentgear:bonus_drops",
+  "base_chance": 0.15,
+  "bonus_multiplier": 1.0,
+  "ingredient": { "tag": "c:ores" }
+}
+```
+
+<ParamField path="base_chance" type="float">
+  Base probability of triggering per trait level. `0.15` at level 2 = 30% chance.
+</ParamField>
+
+<ParamField path="bonus_multiplier" type="float">
+  The dropped stack is multiplied by this value when the effect triggers. `1.0` = drops the same count again (doubles the drop).
+</ParamField>
+
+<ParamField path="ingredient" type="object">
+  Standard Minecraft ingredient. Only items matching this ingredient trigger the bonus drop.
+</ParamField>
+
+---
+
+### `silentgear:item_magnet`
+
+Pulls nearby item entities toward the player while the gear is equipped. Range and effectiveness scale with trait level.
+
+```json
+{
+  "type": "silentgear:item_magnet",
+  "pull_strength": 0.06,
+  "effect_range": 3.0,
+  "affected_items": {}
+}
+```
+
+<ParamField path="pull_strength" type="float">
+  Velocity applied toward the player per tick. Higher values pull items faster.
+</ParamField>
+
+<ParamField path="effect_range" type="float">
+  Base radius in blocks. Actual range is `effect_range * traitLevel + 1`.
+</ParamField>
+
+<ParamField path="affected_items" type="object">
+  Optional ingredient filter. Only item entities matching this ingredient are pulled. Use an empty object `{}` or omit to attract all items.
+</ParamField>
+
+---
+
+### `silentgear:durability`
+
+Modifies durability damage taken by the gear, similar to Unbreaking. Chance of activation scales with trait level; effect scale is fixed.
+
+```json
+{
+  "type": "silentgear:durability",
+  "activation_chance": 0.3,
+  "effect_scale": -1
+}
+```
+
+<ParamField path="activation_chance" type="float">
+  Probability of modifying damage per trait level. `0.3` at level 2 = 60% chance to trigger.
+</ParamField>
+
+<ParamField path="effect_scale" type="integer">
+  Amount added to the durability damage when triggered. Negative values reduce damage (like Unbreaking); positive values increase it (like Brittle).
+</ParamField>
+
+---
+
+### `silentgear:negate_damage`
+
+Reduces incoming damage of a specific type by a percentage per trait level. Used for armor traits that protect against particular damage sources.
+
+```json
+{
+  "type": "silentgear:negate_damage",
+  "damage_type_tag": "minecraft:is_fire",
+  "negated_damage_scale": 0.1
+}
+```
+
+<ParamField path="damage_type_tag" type="string">
+  A damage type tag resource location. Only damage events whose damage source is in this tag are reduced.
+</ParamField>
+
+<ParamField path="negated_damage_scale" type="float">
+  Fraction of **original** damage negated per trait level per armor piece. `0.1` at level 1 with 1 piece = 10% reduction; at level 2 with 4 pieces = 80% reduction.
+</ParamField>
+
+---
+
+### `silentgear:extra_damage`
+
+Adds a flat bonus to melee attack damage against a filtered set of entities, scaling with trait level.
+
+```json
+{
+  "type": "silentgear:extra_damage",
+  "bonus_damage_per_level": 2.5,
+  "affected_type": "tagged",
+  "affected_entities_tag": "minecraft:undead"
+}
+```
+
+<ParamField path="bonus_damage_per_level" type="float">
+  Additional damage added per trait level when the target matches.
+</ParamField>
+
+<ParamField path="affected_type" type="string">
+  Entity filter mode. One of:
+  - `"all"` — affects all living entities.
+  - `"tagged"` — only entities in `affected_entities_tag`.
+  - `"high_health"` — entities with more than 21 max HP.
+  - `"fire_immune"` — fire-immune entities (e.g. blazes, withers).
+  - `"aquatic"` — entities that can drown in water (aquatic mobs).
+</ParamField>
+
+<ParamField path="affected_entities_tag" type="string">
+  Entity type tag resource location. Required when `affected_type` is `"tagged"`.
+</ParamField>
+
+---
+
+### `silentgear:wind_blast`
+
+Creates a wind-charge-like explosion at the target's position on every melee hit. Takes no additional configuration fields.
+
+```json
+{
+  "type": "silentgear:wind_blast"
+}
+```
+
+---
+
+### `silentgear:number_property_modifier`
+
+Modifies one or more numeric gear properties at gear recalculation time. Useful for traits that scale a property (e.g. restoring harvest speed as the gear becomes damaged).
+
+```json
+{
+  "type": "silentgear:number_property_modifier",
+  "property_modifiers": {
+    "silentgear:harvest_speed": {
+      "base_multiplier": 0.5,
+      "multiply_damage_ratio": true,
+      "multiply_original_value": true
+    }
+  }
+}
+```
+
+<ParamField path="property_modifiers" type="object">
+  Map of property ID → `StatMod` object. Each `StatMod` has:
+  - **`base_multiplier`** (`float`) — Base multiplier applied per trait level.
+  - **`multiply_damage_ratio`** (`boolean`) — If `true`, also multiplied by the gear's current damage ratio (0.0 = full health → 1.0 = fully broken). Use this to make effects stronger as gear degrades.
+  - **`multiply_original_value`** (`boolean`) — If `true`, also multiplied by the current base value of the property. Use this for percentage-based modifications.
+</ParamField>
+
+---
+
+## Condition types
+
+Conditions are evaluated before applying trait effects. All conditions support nesting.
+
+| Type ID | Fields | Description |
+|---|---|---|
+| `silentgear:and` | `values` (array of conditions) | All child conditions must pass |
+| `silentgear:or` | `values` (array of conditions) | At least one child condition must pass |
+| `silentgear:not` | `value` (single condition) | Inverts the child condition |
+| `silentgear:gear_type` | `gear_type` (string) | Passes only when the gear's type matches the given gear type ID |
+| `silentgear:material_count` | `count` (integer) | Passes when at least `count` components in the gear carry this trait |
+| `silentgear:material_ratio` | `ratio` (float 0–1) | Passes when at least `ratio` fraction of components carry this trait |
+
+```json
+"conditions": [
+  {
+    "type": "silentgear:gear_type",
+    "gear_type": "silentgear:sword"
+  }
+]
+```
+
+---
+
+## Complete example: attribute modifier trait
+
+This defines a trait that adds attack damage and attack speed to swords, scaling with trait level:
+
+```json data/mypack/silentgear_traits/swift_strike.json
+{
+  "max_level": 3,
+  "name": { "translate": "trait.mypack.swift_strike" },
+  "description": { "translate": "trait.mypack.swift_strike.desc" },
+  "effects": [
+    {
+      "type": "silentgear:attribute",
+      "attribute_modifiers": {
+        "sword/mainhand": [
+          {
+            "attribute": "minecraft:generic.attack_damage",
+            "values": [1.0, 2.0, 3.0],
+            "operation": "add_value"
+          },
+          {
+            "attribute": "minecraft:generic.attack_speed",
+            "values": [0.3, 0.6, 0.9],
+            "operation": "add_value"
+          }
+        ]
+      }
+    }
+  ],
+  "conditions": [
+    {
+      "type": "silentgear:gear_type",
+      "gear_type": "silentgear:sword"
+    }
+  ]
+}
+```
+
+<Tip>
+  The `values` array is indexed by **trait level minus 1**. Level 1 uses index 0, level 2 uses index 1, and so on. If the trait level exceeds the length of the array, the last value is used.
+</Tip>
+
+## Combining multiple effects
+
+A single trait can have multiple effects in the `effects` array. All effects are evaluated independently:
+
+```json
+"effects": [
+  {
+    "type": "silentgear:self_repair",
+    "activation_chance": 0.05,
+    "repair_amount": 1
+  },
+  {
+    "type": "silentgear:attribute",
+    "attribute_modifiers": {
+      "all/any": [
+        {
+          "attribute": "minecraft:generic.movement_speed",
+          "values": [0.01, 0.02],
+          "operation": "add_value"
+        }
+      ]
+    }
+  }
+]
+```

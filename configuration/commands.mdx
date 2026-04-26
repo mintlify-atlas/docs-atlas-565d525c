@@ -1,0 +1,373 @@
+---
+title: "Silent Gear /sgear command reference"
+description: "Reference for every /sgear subcommand: syntax, required permission, and examples for materials, parts, traits, gear properties, grades, and admin tools."
+---
+
+Silent Gear registers a unified `/sgear` command that gives players and server operators CLI-style access to mod data and administrative tools. Running `/sgear` or `/sgear help` prints a context-sensitive list of available subcommands filtered by your permission level.
+
+## Root command
+
+```
+/sgear
+/sgear help
+```
+
+Displays the help menu showing all subcommands available to you. Operator-only commands are listed only when you have permission level 2 or higher.
+
+---
+
+## `/sgear mats` — Materials
+
+Available to all players (no permission requirement).
+
+Lists and exports data about all registered Silent Gear materials.
+
+### Subcommands
+
+```
+/sgear mats list
+```
+
+Prints all registered material IDs to chat as a comma-separated list, followed by the total count.
+
+---
+
+```
+/sgear mats describe <materialID>
+```
+
+Displays a detailed table for a single material in chat, including:
+
+- **ID** — the registry resource location
+- **Parent** — the parent material, if any
+- **Type** — `simple` or `compound`
+- **Categories** — applicable material categories
+- **Part Types** — which part types the material can fill
+- **Traits** — traits granted per part type
+
+| Argument | Type | Description |
+|---|---|---|
+| `materialID` | resource location | The registry ID of the material, e.g. `silentgear:iron`. Tab-completion is provided. |
+
+**Example:**
+```
+/sgear mats describe silentgear:iron
+```
+
+---
+
+```
+/sgear mats dump [includeChildren]
+```
+
+Exports all material data to a tab-separated values (TSV) file at `output/silentgear/material_export.tsv` inside your Minecraft instance folder. Each row includes pack name, display name, part type, ID, parent, categories, and all gear property values. A clickable link to the file is displayed in chat when the export completes.
+
+| Argument | Type | Default | Description |
+|---|---|---|---|
+| `includeChildren` | boolean | `true` | Whether to include child (derived) materials in the export. |
+
+**Example:**
+```
+/sgear mats dump
+/sgear mats dump false
+```
+
+<Note>
+  `dump` sends a packet to the client and writes the file from the client side, so the output path is relative to your local game folder, not the server.
+</Note>
+
+---
+
+## `/sgear parts` — Parts
+
+Available to all players (no permission requirement).
+
+Lists and exports data about all registered gear parts.
+
+### Subcommands
+
+```
+/sgear parts list
+```
+
+Prints all registered part IDs to chat, followed by the total count.
+
+---
+
+```
+/sgear parts describe <partID>
+```
+
+Displays a detailed table for a single part in chat, including:
+
+- **ID** — the registry resource location
+- **Type** — the part type (main, tip, coating, etc.)
+- **Gear Type** — the gear type this part applies to
+- **Visible** — whether the part is shown in tooltips
+- **Materials** — materials the part is composed of
+- **Traits** — traits granted by the part
+
+| Argument | Type | Description |
+|---|---|---|
+| `partID` | resource location | The registry ID of the part. Tab-completion is provided. |
+
+**Example:**
+```
+/sgear parts describe silentgear:main/iron
+```
+
+---
+
+```
+/sgear parts dump
+```
+
+Exports all part data to a TSV file at `output/silentgear/part_export.tsv`. Each row includes display name, ID, part type, and all gear property values. A confirmation message with the file path is shown in chat.
+
+---
+
+## `/sgear traits` — Traits
+
+Available to all players (no permission requirement).
+
+Lists and exports data about all registered gear traits.
+
+### Subcommands
+
+```
+/sgear traits list
+```
+
+Prints all registered trait IDs to chat as a comma-separated list, followed by the total count.
+
+---
+
+```
+/sgear traits describe <traitID>
+```
+
+Displays a detailed block for a single trait in chat, including:
+
+- **ID** — the registry resource location
+- **Max Level** — the highest level the trait can reach
+- **Description** — the trait's in-game description text
+- **Effects** — a list of the trait's registered effect types
+
+| Argument | Type | Description |
+|---|---|---|
+| `traitID` | resource location | The registry ID of the trait. Tab-completion is provided. |
+
+**Example:**
+```
+/sgear traits describe silentgear:flammable
+```
+
+---
+
+```
+/sgear traits dump_md
+```
+
+Exports a comprehensive Markdown document (`output/silentgear/traits_list.md`) containing every registered trait with its description, found-on materials/parts, conditions, max level, and effect types. Data source mods and all registered effect types are listed at the top.
+
+<Note>
+  `dump_md` sends a packet to the client and writes the file client-side. Output is relative to your local game folder.
+</Note>
+
+---
+
+## `/sgear properties` — Gear Properties
+
+**Requires permission level 2 (operator).**
+
+Inspects and recalculates gear property values on items.
+
+### Subcommands
+
+```
+/sgear properties info [player]
+```
+
+Displays a detailed breakdown of all gear properties for the main-hand item of the specified player (or yourself if no player is given). For each property, both the individual modifier contributions from each part and the final computed value are shown.
+
+The target item must be a Silent Gear item.
+
+| Argument | Type | Description |
+|---|---|---|
+| `player` | entity (player) | The player whose held item to inspect. Defaults to the command sender. |
+
+**Examples:**
+```
+/sgear properties info
+/sgear properties info Steve
+```
+
+---
+
+```
+/sgear properties recalculate <players>
+```
+
+Forces a full property recalculation on all gear items in the inventory of each specified player. Useful after config changes or data pack reloads when tooltips appear stale.
+
+| Argument | Type | Description |
+|---|---|---|
+| `players` | entity selector | One or more players whose gear to recalculate. |
+
+**Examples:**
+```
+/sgear properties recalculate @a
+/sgear properties recalculate Steve
+```
+
+---
+
+## `/sgear grade` — Material Grade
+
+**Requires permission level 2 (operator).**
+
+Views and sets the material grade on items held in the main hand.
+
+### Subcommands
+
+```
+/sgear grade list
+```
+
+Lists all valid grade values in chat.
+
+---
+
+```
+/sgear grade set <grade>
+```
+
+Sets the material grade on the item currently held in the main hand. The item must be a Silent Gear material. Use `NONE` to remove the grade entirely.
+
+| Argument | Type | Description |
+|---|---|---|
+| `grade` | string (enum) | A `MaterialGrade` value: `NONE`, `E`, `D`, `C`, `B`, `A`, `S`. Tab-completion is provided. |
+
+**Examples:**
+```
+/sgear grade set S
+/sgear grade set NONE
+```
+
+---
+
+## `/sgear random` — Random Gear
+
+**Requires permission level 2 (operator).**
+
+Generates a randomly constructed Silent Gear item and gives it to one or more players.
+
+```
+/sgear random <players> <item> [tier]
+```
+
+Creates a gear item with randomly chosen materials appropriate to the specified tier and gives one copy to each selected player.
+
+| Argument | Type | Default | Description |
+|---|---|---|---|
+| `players` | entity selector | — | One or more players to receive the item. |
+| `item` | resource location | — | The Silent Gear item type to generate, e.g. `silentgear:pickaxe`. Tab-completion shows only valid gear items. |
+| `tier` | integer | `3` | Material tier to target when selecting random components. |
+
+**Examples:**
+```
+/sgear random @p silentgear:pickaxe
+/sgear random @a silentgear:sword 5
+```
+
+---
+
+## `/sgear damage` — Set Damage
+
+**Requires permission level 2 (operator).**
+
+Sets the damage value on the item held in the main hand. Works on any damageable item, not just Silent Gear items.
+
+### Subcommands
+
+```
+/sgear damage <amount>
+```
+
+Sets the damage value to an exact integer. `0` means fully repaired. Tab-completion suggests `0`, quarter increments, and the current damage value.
+
+| Argument | Type | Description |
+|---|---|---|
+| `amount` | integer (≥ 0) | Damage value to set. Must not exceed the item's max damage. |
+
+**Example:**
+```
+/sgear damage 0
+/sgear damage 500
+```
+
+---
+
+```
+/sgear damage max
+```
+
+Sets the damage to the maximum value, effectively breaking the item (zero remaining durability).
+
+**Example:**
+```
+/sgear damage max
+```
+
+<Warning>
+  For Silent Gear items, setting damage to `max` triggers a property recalculation automatically. For non-gear items it only sets the raw damage value.
+</Warning>
+
+---
+
+## `/sgear starcharged` — Starlight Charge
+
+**Requires permission level 2 (operator).**
+
+Views and sets the starlight charge level on material items held in the main hand.
+
+### Subcommands
+
+```
+/sgear starcharged list
+```
+
+Lists all valid charge level values (0 through the maximum tier) in chat.
+
+---
+
+```
+/sgear starcharged set <level>
+```
+
+Sets the starlight charge level on the material item currently held in the main hand. Use `0` to remove the charge entirely. The item must be a Silent Gear material.
+
+| Argument | Type | Description |
+|---|---|---|
+| `level` | integer (0 – max tier) | Charge level to apply. `0` removes the modifier. Tab-completion suggests all valid levels. |
+
+**Examples:**
+```
+/sgear starcharged set 3
+/sgear starcharged set 0
+```
+
+---
+
+## Permission summary
+
+| Command | Required level |
+|---|---|
+| `/sgear mats` | 0 (any player) |
+| `/sgear parts` | 0 (any player) |
+| `/sgear traits` | 0 (any player) |
+| `/sgear grade` | 2 (operator) |
+| `/sgear random` | 2 (operator) |
+| `/sgear properties` | 2 (operator) |
+| `/sgear damage` | 2 (operator) |
+| `/sgear starcharged` | 2 (operator) |

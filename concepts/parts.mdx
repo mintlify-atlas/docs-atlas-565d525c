@@ -1,0 +1,110 @@
+---
+title: "Parts: assembling your gear from crafted components"
+description: "Parts are the building blocks of Silent Gear items. Each type fills a distinct role, from the main body that sets the gear type to removable upgrade parts."
+---
+
+In Silent Gear you never craft a pickaxe directly from raw materials. Instead you first craft **parts** — discrete components such as heads, rods, tips, and bindings — and then combine those parts at the crafting table or gear smithing table to produce the finished item. This two-step process gives you precise control over every stat and trait on your gear.
+
+## What is a part?
+
+A part is an item that encodes the material(s) it was made from and exposes the stats and traits those materials provide for the given part slot. Parts are crafted by combining a **blueprint** (or template) with one or more material items. The resulting part item carries all property data and can be slotted into gear.
+
+Parts are split into **simple** and **compound** forms:
+
+- **Simple parts** are crafted from a single material. They are the starting point for most early-game gear.
+- **Compound parts** accept multiple material inputs and blend their properties together, weighted by the proportions you use. The Alloy Maker is used when you want a fully blended compound material, but you can also just combine different materials directly in the part blueprint recipe for a compound part.
+
+## Part types
+
+| Part type | Removable | Role |
+|---|:---:|---|
+| `main` | No | Defines the gear type and provides the primary stats (durability, harvest tier, attack damage, etc.). Every piece of gear has exactly one main part. |
+| `rod` | No | The handle. Contributes secondary stats to tools and weapons, most importantly harvest speed and attack speed modifiers. |
+| `tip` | Yes | Attached to the end of a tool head. Provides bonus stats that stack on top of the main part's values — useful for boosting harvest tier or adding damage. |
+| `cord` | No | The string on bows and fishing rods. Affects draw speed, projectile speed, and accuracy. |
+| `fletching` | No | The flights on arrows and bolts. Influences projectile accuracy and speed. |
+| `binding` | Yes | Wraps the handle junction. Contributes small stat adjustments and can carry traits that benefit the wielder passively. |
+| `coating` | Yes | A surface treatment applied at the smithing table. Adds a thin layer of stat contributions and traits without replacing the base material. |
+| `grip` | Yes | A wrap around the rod. Primarily adjusts attack speed and can add traits to melee weapons. |
+| `lining` | Yes | Interior padding inside armor. Contributes armor toughness and knockback resistance bonuses. |
+| `setting` | Yes | A gem or stone set into the gear. Typically added with the Jeweler's Kit and contributes traits or minor stat bonuses. |
+| `misc_upgrade` | Yes | A catch-all upgrade slot. Multiple misc upgrades can be applied to a single item (up to 256). Used for miscellaneous trait additions. |
+
+<Note>
+All removable parts can be extracted from gear in the gear smithing table without destroying the item. Non-removable parts are permanent once assembled.
+</Note>
+
+## The main part
+
+The main part is the most important part of any piece of gear. Its material determines:
+
+- **Which gear type** the item is (e.g., pickaxe vs. sword)
+- **Durability** — the dominant stat that sets how long the item lasts
+- **Harvest tier** — what blocks the tool can mine
+- **Base attack damage** — for weapons
+- **Base armor** — for armor pieces
+
+Every gear type has its own main part item (e.g., Pickaxe Head, Sword Blade, Helmet Plate). These items are crafted from gear-specific blueprints found in the blueprint package.
+
+## The rod
+
+The rod acts as the handle shared across most tool and weapon types. It primarily modifies:
+
+- **Harvest speed** — a faster rod makes a quicker tool
+- **Attack speed** — the rod influences the attack cooldown on weapons
+- **Durability contributions** — rods provide a secondary durability pool
+
+Different materials produce very different rods. A blaze rod material gives fire-related traits; a flexible fiber rod improves draw speed on ranged weapons.
+
+## Upgrade parts (tip, binding, coating, grip, lining, setting)
+
+These parts are all **removable** and function as incremental upgrades:
+
+- **Tip** — added to tools to push harvest tier up by one level or boost mining speed
+- **Binding** — a subtle tweak slot; some bindings carry traits that trigger on use
+- **Coating** — applied via the smithing table using a smithing template; adds a material layer
+- **Grip** — mainly affects melee weapons; adjusts attack speed and can add on-hit traits
+- **Lining** — armor-only; improves physical and magic damage reduction
+- **Setting** — inserted with the Jeweler's Kit; typically provides trait effects rather than raw stats
+
+<Tip>
+Start with tip parts when upgrading early-game tools. Upgrading from a stone harvest tier to an iron tier tip is cheaper than remaking the whole item.
+</Tip>
+
+## Misc upgrades
+
+`misc_upgrade` is the only part type that can be stacked multiple times on a single item (up to 256 by default). Misc upgrades are flagged as both removable and upgrades, making them ideal for stacking trait sources from consumable items. Unlike other parts, misc upgrades have no associated compound part item — they are applied as whole items.
+
+## How parts are combined into gear
+
+<Steps>
+  <Step title="Craft or obtain blueprints">
+    Get a blueprint package on your first login, or craft individual blueprints at the crafting table. Blueprints define which part type you are crafting.
+  </Step>
+  <Step title="Craft the part">
+    Place the blueprint and your chosen materials in the crafting grid. The output is a compound part item carrying all the stats of those materials.
+  </Step>
+  <Step title="Assemble the gear">
+    Combine the required parts (at minimum: a main part and usually a rod) in the crafting grid to produce the finished gear item.
+  </Step>
+  <Step title="Add upgrades">
+    Take finished gear to the gear smithing table to add or swap removable upgrade parts (tip, binding, coating, grip, lining, setting, misc_upgrade).
+  </Step>
+</Steps>
+
+## Further reading
+
+<CardGroup cols={2}>
+  <Card title="Materials" href="/concepts/materials">
+    Understand what properties and traits each material brings.
+  </Card>
+  <Card title="Blueprints" href="/concepts/blueprints">
+    Learn how blueprints and templates work when crafting parts.
+  </Card>
+  <Card title="Traits" href="/concepts/traits">
+    Discover the special abilities parts can carry.
+  </Card>
+  <Card title="Gear Types" href="/concepts/gear-types">
+    See every tool, weapon, and armor type available.
+  </Card>
+</CardGroup>

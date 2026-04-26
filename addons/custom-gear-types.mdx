@@ -1,0 +1,155 @@
+---
+title: 'Creating custom gear types for Silent Gear add-ons'
+description: 'Extend Silent Gear with new gear categories — tools, weapons, armor, and more — using GearType.Builder and NeoForge DeferredRegister.'
+---
+
+A `GearType` defines a category of gear: which property groups apply to it (harvest speed, attack damage, armor rating, etc.), which NeoForge `ItemAbility` actions it can perform, and how its durability is calculated. Every gear item in Silent Gear is backed by exactly one `GearType` registration. Add-on mods can register their own gear types and pair them with custom item classes.
+
+## How GearType works
+
+`GearType` is a plain record registered in `SgRegistries.GEAR_TYPE`. The type hierarchy is built through parent references — for example, `pickaxe` → `harvest_tool` → `tool` → `all`. The `matches(GearType)` method walks this chain, so trait data-pack conditions that target `tool` will automatically apply to any custom type whose parent chain includes `tool`.
+
+```java
+// GearType.java (simplified record fields)
+public record GearType(
+    @Nullable Supplier<GearType> parent,
+    int animationFrames,
+    Set<ItemAbility> itemAbilities,
+    float armorDurabilityMultiplier,
+    Supplier<NumberProperty> durabilityStat,
+    Set<GearPropertyGroup> relevantPropertyGroups
+) { ... }
+```
+
+## GearType.Builder API
+
+All instances are created with the fluent `GearType.Builder`:
+
+| Method | Description |
+|--------|-------------|
+| `GearType.Builder.of()` | Creates a root type with no parent. |
+| `GearType.Builder.of(Supplier<GearType> parent)` | Creates a type that inherits from `parent`. Inherits `relevantPropertyGroups` when none are specified. |
+| `.relevantPropertyGroups(GearPropertyGroup...)` | Declares which property groups (harvest, attack, armor, etc.) are meaningful for this type. |
+| `.toolActions(ItemAbility...)` | Associates NeoForge `ItemAbility` values so `canPerformAction` returns `true` for the given actions. |
+| `.toolActions(Set<ItemAbility>)` | Same as above, accepting a pre-built set (e.g., `ItemAbilities.DEFAULT_PICKAXE_ACTIONS`). |
+| `.durabilityStat(Supplier<NumberProperty>)` | Overrides which gear property drives base durability. Defaults to `GearProperties.DURABILITY`; armor types use `GearProperties.ARMOR_DURABILITY`. |
+| `.armorDurabilityMultiplier(float)` | Multiplier applied on top of the durability stat for armor pieces. |
+| `.animationFrames(int)` | Number of animation frames for the use animation (relevant for ranged weapons). Defaults to `1`. |
+| `.build()` | Produces the `GearType` instance to pass to the registry. |
+
+## Registering a custom gear type
+
+Use `DeferredRegister` against `SgRegistries.GEAR_TYPE`, then call `register` on the NeoForge mod event bus inside your mod constructor or static initializer:
+
+```java
+import net.neoforged.neoforge.common.ItemAbilities;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
+import net.silentchaos512.gear.api.item.GearType;
+import net.silentchaos512.gear.api.property.GearPropertyGroups;
+import net.silentchaos512.gear.setup.SgRegistries;
+import net.silentchaos512.gear.setup.gear.GearTypes;
+
+public class MyGearTypes {
+    public static final DeferredRegister<GearType> REGISTRAR =
+            DeferredRegister.create(SgRegistries.GEAR_TYPE, MyMod.MOD_ID);
+
+    // A custom scythe type — child of MELEE_WEAPON, with harvest and attack properties
+    public static final DeferredHolder<GearType, GearType> SCYTHE =
+            REGISTRAR.register("scythe", () -> GearType.Builder.of(GearTypes.MELEE_WEAPON)
+                    .relevantPropertyGroups(
+                            GearPropertyGroups.SPECIAL,
+                            GearPropertyGroups.GENERAL,
+                            GearPropertyGroups.HARVEST,
+                            GearPropertyGroups.ATTACK
+                    )
+                    .toolActions(ItemAbilities.DEFAULT_HOE_ACTIONS)
+                    .build()
+            );
+}
+```
+
+Register the `DeferredRegister` on the mod event bus in your main mod class:
+
+```java
+@Mod(MyMod.MOD_ID)
+public class MyMod {
+    public static final String MOD_ID = "mymod";
+
+    public MyMod(IEventBus modBus) {
+        MyGearTypes.REGISTRAR.register(modBus);
+        MyItems.REGISTRAR.register(modBus);
+    }
+}
+```
+
+## Creating the item class
+
+Pair your gear type with an item class. Silent Gear provides several base classes:
+
+| Base class | Suitable for |
+|------------|-------------|
+| `GearDiggerItem` | Harvest tools (pickaxe, shovel, hoe, etc.) |
+| `GearSwordItem` | Melee weapons |
+| `GearArmorItem` | Armor pieces |
+| `GearBowItem` | Ranged bows |
+
+For the scythe example above, extend `GearDiggerItem` (which handles block-breaking) and pass a block tag for the blocks your scythe is effective against:
+
+```java
+import net.minecraft.tags.BlockTags;
+import net.minecraft.world.item.Item;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.silentchaos512.gear.item.gear.GearDiggerItem;
+
+public class MyItems {
+    public static final DeferredRegister<Item> REGISTRAR =
+            DeferredRegister.create(BuiltInRegistries.ITEM, MyMod.MOD_ID);
+
+    public static final DeferredHolder<Item, Item> SCYTHE =
+            REGISTRAR.register("scythe", () ->
+                    new GearDiggerItem(
+                            MyGearTypes.SCYTHE,   // Supplier<GearType>
+                            BlockTags.MINEABLE_WITH_HOE,
+                            new Item.Properties()
+                    )
+            );
+}
+```
+
+`GearDiggerItem` requires a `Supplier<GearType>` (not the type directly) so that the reference is resolved lazily after all registries are populated.
+
+## Localization
+
+Silent Gear generates the display name for a gear type using the translation key pattern:
+
+```
+gearType.<namespace>.<path>
+```
+
+For the scythe example, add a translation entry in your `lang/en_us.json`:
+
+```json
+{
+    "gearType.mymod.scythe": "Scythe"
+}
+```
+
+## Built-in parent types
+
+The following parent types are registered by Silent Gear itself. Inherit from whichever best describes your new type:
+
+| Registry name | Description |
+|---------------|-------------|
+| `silentgear:all` | Root of all gear. Every type ultimately descends from this. |
+| `silentgear:tool` | General tool parent (harvest + attack property groups). |
+| `silentgear:harvest_tool` | Harvest-focused tools (pickaxe, shovel, axe, hoe). |
+| `silentgear:weapon` | Weapon parent. |
+| `silentgear:melee_weapon` | Swords and melee weapons. |
+| `silentgear:ranged_weapon` | Bows, crossbows, slingshots (uses projectile property group). |
+| `silentgear:hybrid_weapon` | Weapons with both melee and ranged properties. |
+| `silentgear:armor` | Armor pieces (uses `ARMOR_DURABILITY` stat). |
+| `silentgear:curio` | Curio accessories (special property group only). |
+| `silentgear:projectile` | Arrows and similar projectiles. |

@@ -1,0 +1,107 @@
+---
+title: "Craft your first Silent Gear tool step by step"
+description: "Follow this step-by-step walkthrough to craft a modular Silent Gear tool, from obtaining blueprints to reading stats in the item tooltip."
+---
+
+Silent Gear tools are not crafted with vanilla recipes. Instead, you first make individual **parts** from raw materials using blueprints, then assemble those parts together with a gear blueprint. This system lets you choose exactly what every component is made from, giving you full control over the tool's stats and special abilities (traits).
+
+## Before you begin
+
+You need:
+
+- Silent Gear installed and a new world loaded (see [Installation](/getting-started/installation))
+- Basic materials: sticks, stone, wood planks, or any other material you want to try
+- JEI or EMI installed (optional but strongly recommended for browsing recipes in-game)
+
+## Understanding gear parts
+
+Every gear item is made up of several **part slots**. The most important ones for a basic tool are:
+
+| Part | Role |
+|---|---|
+| **Main** | Determines the gear type (pickaxe head, sword blade, etc.) and contributes the most to stats |
+| **Rod** | The handle; contributes durability and some stats |
+| **Tip** | Optional upgrade that modifies the tool tip's stats |
+| **Binding** | Optional part that can add traits or stats |
+| **Grip** | Optional handle upgrade |
+
+<Note>
+The **main part** determines what kind of gear you are assembling. A pickaxe main part produces a pickaxe; a sword main part produces a sword. You must choose the correct gear blueprint to match the main part you crafted.
+</Note>
+
+## Step-by-step: crafting your first tool
+
+<Steps>
+  <Step title="Get your starter blueprints">
+    When you join a new world, you will automatically receive a **Blueprint Package** in your inventory. Right-click it to open it and receive a set of starter blueprints. These include blueprints for common part types such as the rod, tip, and several gear types.
+
+    If you did not receive a blueprint package, or you need additional blueprints, craft them manually:
+
+    ```
+    Blueprint Paper (crafted from paper) + the item whose blueprint you want
+    ```
+
+    Blueprint paper can also be crafted into a **Blueprint Book** to keep all your blueprints organised in a single item slot.
+  </Step>
+  <Step title="Consult the Material Book">
+    Craft a **Material Book** (`material_book`) to look up every material that Silent Gear knows about. Right-click the Material Book to browse materials, their stats (harvest level, durability, speed, etc.), and their traits. Use this to decide which materials you want to use for each part.
+
+    <Tip>
+    Early game, stone and wood are reliable starting materials. Iron parts are a significant upgrade once you have smelted some iron ingots.
+    </Tip>
+  </Step>
+  <Step title="Craft the rod part">
+    Place a **Rod Blueprint** and your chosen material (for example, two sticks or two iron ingots arranged as you would for a vanilla tool handle) in the crafting grid. The blueprint remains in your inventory after crafting and can be reused indefinitely.
+
+    The resulting **Rod** item shows the material's name in its tooltip. Hover over it to see the stats it will contribute.
+  </Step>
+  <Step title="Craft the main part">
+    Use the appropriate **gear blueprint** (for example, a Pickaxe Blueprint) together with your chosen head material in the crafting grid. The shape mirrors the vanilla pickaxe head pattern but uses the blueprint instead of a tool item.
+
+    The resulting main part item (for example, **Pickaxe Head**) determines the gear type you will assemble in the next step.
+  </Step>
+  <Step title="Craft optional parts (tip, binding, grip)">
+    Optional parts add extra stats or traits on top of what the main and rod provide. Use the corresponding blueprint (Tip Blueprint, Binding Blueprint, etc.) with a material in the crafting grid to create them.
+
+    <Note>
+    You do not need optional parts to assemble gear. Start with just a main part and a rod if you want to keep things simple.
+    </Note>
+  </Step>
+  <Step title="Assemble the gear">
+    Place the **gear blueprint** (for example, the Pickaxe Blueprint) along with your main part, rod, and any optional parts together in a crafting grid — no specific arrangement is required, just place them all in the grid. The output slot will show your finished tool.
+
+    Blueprints are **not** consumed when assembling gear — they are returned to your inventory. Only single-use **templates** are consumed on use. Blueprints can be used unlimited times.
+
+    <Warning>
+    If the output slot is empty, check that your main part matches the gear blueprint type. A Sword Head will not combine with a Pickaxe Blueprint.
+    </Warning>
+  </Step>
+  <Step title="Read the gear tooltip">
+    Hover over your finished tool to see its full stat breakdown in the tooltip. Stats shown include:
+
+    - **Durability** — total uses before the tool breaks
+    - **Harvest Speed** — how fast it mines the relevant blocks
+    - **Harvest Tier** — the material level (stone, iron, diamond, etc.)
+    - **Attack Damage** and **Attack Speed** (for weapons)
+    - **Traits** — special abilities contributed by the materials used, listed at the bottom of the tooltip
+
+    Hold **Shift** for an extended tooltip that shows the contribution of each individual part.
+  </Step>
+</Steps>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Materials" icon="gem" href="/concepts/materials">
+    Learn how each material's properties affect gear stats and which traits it contributes.
+  </Card>
+  <Card title="Parts" icon="puzzle-piece" href="/concepts/parts">
+    Deep dive into every part slot and how parts interact with each other.
+  </Card>
+  <Card title="Traits" icon="wand-magic-sparkles" href="/concepts/traits">
+    Explore all 20+ built-in traits and how to combine materials to target specific traits.
+  </Card>
+  <Card title="Upgrading gear" icon="wrench" href="/guides/upgrading-gear">
+    Swap out parts, apply coatings, add tips, and repair gear once you have better materials.
+  </Card>
+</CardGroup>

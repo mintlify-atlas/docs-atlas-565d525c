@@ -1,0 +1,70 @@
+---
+title: "Installing Silent Gear for Minecraft 1.21.1"
+description: "Download and install Silent Gear for Minecraft 1.21.1 with NeoForge, including required and optional dependencies for the full experience."
+---
+
+Silent Gear requires a small number of dependencies to run, and works best alongside a few optional mods that improve the recipe-viewing and equipment experience. This page walks you through downloading and setting up everything you need.
+
+## Requirements
+
+| Component | Version |
+|---|---|
+| Minecraft | 1.21.1 |
+| NeoForge | 21.1.x (`neo_version_range=[21,)`) |
+| Silent Lib | 10.x (`silentlib_version=10.+`) |
+
+<Warning>
+Silent Lib is **required**. Silent Gear will not load without it. Always download both mods together.
+</Warning>
+
+## Optional dependencies
+
+These mods are not required, but improve the Silent Gear experience significantly:
+
+- **JEI** (19.x) or **EMI** (1.1+) — shows all crafting recipes in-game, including blueprint-based gear assembly. Strongly recommended for new players.
+- **Curios** (9.2.3+) — adds curio equipment slots so you can equip Silent Gear curio items.
+- **Caelus** (7.0.1+) — enables the elytra-replacement flight mechanic used by Silent Gear's elytra gear type.
+
+## Download
+
+Always download Silent Gear and its dependencies from official sources only. Files downloaded from unofficial sites may be outdated, modified, or unsafe.
+
+<CardGroup cols={2}>
+  <Card title="CurseForge" icon="fire-flame-curved" href="https://minecraft.curseforge.com/projects/silent-gear">
+    Download Silent Gear from CurseForge (project ID 297039).
+  </Card>
+  <Card title="Modrinth" icon="leaf" href="https://modrinth.com/mod/silent-gear">
+    Download Silent Gear from Modrinth (project slug `silent-gear`).
+  </Card>
+</CardGroup>
+
+<Note>
+Silent Lib is also available on both CurseForge and Modrinth. Search for **Silent Lib** by SilentChaos512 on whichever platform you use for Silent Gear.
+</Note>
+
+## Installation steps
+
+<Steps>
+  <Step title="Install NeoForge 21.1.x">
+    Download NeoForge for Minecraft 1.21.1 from [neoforged.net](https://neoforged.net) and run the installer. If you are using a launcher such as Prism, ATLauncher, or CurseForge, create a new 1.21.1 NeoForge instance instead.
+  </Step>
+  <Step title="Download Silent Lib">
+    Go to the Silent Lib page on CurseForge or Modrinth and download the latest release for Minecraft 1.21.1. The file name will contain the Minecraft version and mod version (for example, `silentlib-1.21.1-10.x.x.jar`).
+  </Step>
+  <Step title="Download Silent Gear">
+    Go to the Silent Gear page on CurseForge or Modrinth and download version **1.21.1-4.1.6.1** or the latest available release for Minecraft 1.21.1.
+  </Step>
+  <Step title="Add both JARs to your mods folder">
+    Copy `silentlib-*.jar` and `silentgear-*.jar` into the `mods/` folder of your NeoForge instance. If you are using a launcher, use its built-in mod management to add the files.
+  </Step>
+  <Step title="Add optional mods (recommended)">
+    Download JEI or EMI and add them to the same `mods/` folder. If you want curio slots, add Curios and Caelus as well.
+  </Step>
+  <Step title="Launch and verify">
+    Start the game. On the main menu, open **Mods** and confirm that **Silent Gear** and **Silent Lib** both appear in the list with no error badges. If either shows a red error, check that the versions match the requirements above.
+  </Step>
+</Steps>
+
+<Tip>
+If the game fails to launch with a `LoadingFailedException`, check your NeoForge log (`.minecraft/logs/latest.log`) for lines containing `silentgear` or `silentlib`. The error message will indicate whether a dependency version mismatch is the cause.
+</Tip>

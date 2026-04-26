@@ -1,0 +1,278 @@
+---
+title: 'Implementing custom trait effects for Silent Gear add-ons'
+description: 'Use the Silent Gear Java API to create TraitEffect subclasses, register TraitEffectType codecs, and wire everything up through data packs.'
+---
+
+Traits are the behavior layer applied to gear based on its materials. Each trait can carry one or more *trait effects* — Java objects that implement specific hooks like attacking, updating every tick, or modifying attribute modifiers. Add-on mods can create entirely new effect types by subclassing `TraitEffect`, wrapping it in a `TraitEffectType`, and registering that type in `SgRegistries.TRAIT_EFFECT_TYPE`. Data packs then reference the registered type name to attach the effect to a trait.
+
+## Architecture overview
+
+| Class | Role |
+|-------|------|
+| `TraitEffect` | Abstract base class. Override only the hooks you need. |
+| `TraitEffectType<T>` | Codec + stream codec wrapper. Registered in `SgRegistries.TRAIT_EFFECT_TYPE`. |
+| `TraitActionContext` | Carries the player, trait instance, trait level, and gear stack into every hook call. |
+| `ITraitCondition` | Optional predicate that gates whether a trait effect is active. |
+
+## TraitEffect hooks
+
+`TraitEffect` provides default no-op implementations for all hooks. Override only the ones relevant to your effect:
+
+```java
+public abstract class TraitEffect {
+
+    /** Must return the registered TraitEffectType for this class. */
+    public abstract TraitEffectType<?> type();
+
+    /** Lines added to the auto-generated wiki output. Return empty list if unused. */
+    public abstract Collection<String> getExtraWikiLines();
+
+    // --- Override the hooks you need ---
+
+    /** Called every tick while the item is in the player's inventory or equipped. */
+    public void onUpdate(TraitActionContext context, boolean isEquipped) {}
+
+    /** Called when the player attacks an entity. Return modified damage value. */
+    public float onAttackEntity(TraitActionContext context, LivingEntity target, float baseValue) {
+        return baseValue;
+    }
+
+    /** Called when incoming damage is calculated for armor. Return modified amount. */
+    public float onEntityIncomingDamage(ItemStack armor, int traitLevel, LivingEntity target,
+                                         DamageSource source, float amount, float originalAmount) {
+        return amount;
+    }
+
+    /** Called to add attribute modifiers from this trait. */
+    public void onGetAttributeModifiers(TraitActionContext context,
+                                         ItemAttributeModifiers.Builder builder) {}
+
+    /** Called when durability damage is about to be applied. Return modified damage. */
+    public int onDurabilityDamage(TraitActionContext context, int damageTaken) {
+        return damageTaken;
+    }
+
+    /** Called once immediately after the gear is crafted. */
+    public void onGearCrafted(TraitActionContext context) {}
+
+    /** Called before gear stat recalculation. */
+    public void onRecalculatePre(ItemStack gear, int traitLevel) {}
+
+    /** Called after gear stat recalculation. */
+    public void onRecalculatePost(ItemStack gear, int traitLevel) {}
+
+    /** Called when the player left-clicks with the item (no target). */
+    public void onItemSwing(ItemStack stack, LivingEntity wielder, int traitLevel) {}
+
+    /** Returns a speed bonus for mining a given block state. */
+    public float getMiningSpeedModifier(int traitLevel, BlockState state) { return 0f; }
+
+    /** Returns extra loot drops when this trait fires. */
+    public ItemStack addLootDrops(TraitActionContext context, ItemStack stack) {
+        return ItemStack.EMPTY;
+    }
+}
+```
+
+## TraitActionContext
+
+Most hooks receive a `TraitActionContext`. It is a simple record:
+
+```java
+public record TraitActionContext(
+    @Nullable Player player,  // null in some server-side contexts
+    Trait trait,              // the Trait data object
+    int traitLevel,           // 1-based level of the trait on this gear
+    ItemStack gear            // the gear item stack
+) { ... }
+```
+
+Use `context.traitLevel()` to scale effect magnitude, `context.gear()` to read or modify the stack, and `context.player()` (null-checked) for player-specific operations.
+
+## TraitEffectType
+
+`TraitEffectType<T>` wraps the codecs needed for serialization and provides an optional wiki description string:
+
+```java
+public class TraitEffectType<T extends TraitEffect> extends Serializer<RegistryFriendlyByteBuf, T> {
+
+    public TraitEffectType(
+        MapCodec<T> codec,
+        StreamCodec<RegistryFriendlyByteBuf, T> streamCodec,
+        String wikiDescription   // shown in auto-generated wiki pages
+    ) { ... }
+}
+```
+
+You must supply both a `MapCodec` (for JSON data-pack serialization via DataFixerUpper) and a `StreamCodec` (for network sync). Both must fully encode and decode your `TraitEffect` subclass.
+
+## Implementing a custom TraitEffect
+
+The example below creates a **Burning Strike** effect: when the player attacks an entity, the entity is set on fire for a number of seconds scaled by trait level.
+
+### 1. Write the TraitEffect subclass
+
+```java
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.world.entity.LivingEntity;
+import net.silentchaos512.gear.api.traits.TraitActionContext;
+import net.silentchaos512.gear.api.traits.TraitEffect;
+import net.silentchaos512.gear.api.traits.TraitEffectType;
+
+import java.util.Collection;
+import java.util.List;
+
+public class BurningStrikeTraitEffect extends TraitEffect {
+
+    // Codec — serializes from/to JSON data-pack entries
+    public static final MapCodec<BurningStrikeTraitEffect> CODEC =
+            RecordCodecBuilder.mapCodec(instance -> instance.group(
+                    com.mojang.serialization.Codec.INT
+                            .fieldOf("seconds_per_level")
+                            .forGetter(e -> e.secondsPerLevel)
+            ).apply(instance, BurningStrikeTraitEffect::new));
+
+    // StreamCodec — serializes for network sync
+    public static final StreamCodec<RegistryFriendlyByteBuf, BurningStrikeTraitEffect> STREAM_CODEC =
+            StreamCodec.composite(
+                    ByteBufCodecs.VAR_INT,
+                    e -> e.secondsPerLevel,
+                    BurningStrikeTraitEffect::new
+            );
+
+    private final int secondsPerLevel;
+
+    public BurningStrikeTraitEffect(int secondsPerLevel) {
+        this.secondsPerLevel = secondsPerLevel;
+    }
+
+    @Override
+    public TraitEffectType<?> type() {
+        // Reference the registered type defined below
+        return MyTraitEffectTypes.BURNING_STRIKE.get();
+    }
+
+    @Override
+    public float onAttackEntity(TraitActionContext context, LivingEntity target, float baseValue) {
+        int fireTicks = secondsPerLevel * context.traitLevel() * 20; // seconds → ticks
+        target.setRemainingFireTicks(Math.max(target.getRemainingFireTicks(), fireTicks));
+        return baseValue; // pass damage through unchanged
+    }
+
+    @Override
+    public Collection<String> getExtraWikiLines() {
+        return List.of("  - Sets target on fire for " + secondsPerLevel + "s per trait level");
+    }
+}
+```
+
+### 2. Register the TraitEffectType
+
+```java
+import net.neoforged.neoforge.registries.DeferredRegister;
+import net.silentchaos512.gear.api.traits.TraitEffectType;
+import net.silentchaos512.gear.setup.SgRegistries;
+
+import java.util.function.Supplier;
+
+public class MyTraitEffectTypes {
+    public static final DeferredRegister<TraitEffectType<?>> REGISTRAR =
+            DeferredRegister.create(SgRegistries.TRAIT_EFFECT_TYPE, MyMod.MOD_ID);
+
+    public static final Supplier<TraitEffectType<BurningStrikeTraitEffect>> BURNING_STRIKE =
+            REGISTRAR.register("burning_strike", () ->
+                    new TraitEffectType<>(
+                            BurningStrikeTraitEffect.CODEC,
+                            BurningStrikeTraitEffect.STREAM_CODEC,
+                            "Sets the attacked entity on fire for N seconds per trait level"
+                    )
+            );
+}
+```
+
+Register the `DeferredRegister` on the mod event bus:
+
+```java
+@Mod(MyMod.MOD_ID)
+public class MyMod {
+    public MyMod(IEventBus modBus) {
+        MyTraitEffectTypes.REGISTRAR.register(modBus);
+    }
+}
+```
+
+<Warning>
+  `type()` in your `TraitEffect` subclass must return the registered instance, not a freshly constructed one. Use the `DeferredHolder` reference (e.g., `MyTraitEffectTypes.BURNING_STRIKE.get()`) so that the reference is resolved after registration.
+</Warning>
+
+## ITraitCondition for conditional effects
+
+`ITraitCondition` lets you gate a trait effect so it only applies under certain circumstances. Conditions are composed at the data-pack level, but you can also implement custom condition types:
+
+```java
+public interface ITraitCondition {
+    TraitConditionSerializer<?> serializer();
+
+    /** Return true when this condition is satisfied and the effect should be active. */
+    boolean matches(Trait trait, ComputeContext context);
+
+    /**
+     * Called after matches() returns true. Return Optional.empty() to permanently remove
+     * a one-shot condition, or Optional.of(this) to keep it active.
+     */
+    Optional<ITraitCondition> reduce(Trait trait, ComputeContext context);
+
+    MutableComponent getDisplayText();
+}
+```
+
+Register condition serializers in `SgRegistries.TRAIT_CONDITION` using `DeferredRegister<TraitConditionSerializer<?>>`, following the same pattern as `TraitEffectType`.
+
+## Attaching the effect via data pack
+
+Once your `TraitEffectType` is registered, reference it by its registry name in a trait JSON file under `data/<namespace>/silentgear_traits/`. The `type` field inside each entry of the `effects` array corresponds to the registered name:
+
+```json data/mymod/silentgear_traits/burning_strike.json
+{
+  "max_level": 3,
+  "name": { "translate": "trait.mymod.burning_strike" },
+  "description": { "translate": "trait.mymod.burning_strike.desc" },
+  "effects": [
+    {
+      "type": "mymod:burning_strike",
+      "seconds_per_level": 2
+    }
+  ],
+  "conditions": []
+}
+```
+
+The `seconds_per_level` field is deserialized by the `MapCodec` you defined, so its name must match the `fieldOf(...)` key exactly.
+
+<Tip>
+  Use `/reload` during development to pick up data-pack changes without restarting the game. Java code changes (new `TraitEffectType` registrations) still require a restart.
+</Tip>
+
+## Built-in TraitEffectType reference
+
+Silent Gear ships with the following effect types you can reference or extend:
+
+| Registry name | Description |
+|---------------|-------------|
+| `silentgear:attribute` | Adds attribute modifiers (e.g., attack damage, speed) to the gear item. |
+| `silentgear:wielder_effect` | Applies potion effects to the entity holding or wearing the gear. |
+| `silentgear:target_effect` | Applies potion effects to an entity that was attacked. |
+| `silentgear:extra_damage` | Deals bonus damage to entities matching a given tag. |
+| `silentgear:durability` | Chance to cancel or multiply durability damage. |
+| `silentgear:self_repair` | Randomly restores durability over time. |
+| `silentgear:enchantment` | Adds hidden enchantments that do not conflict with normal ones. |
+| `silentgear:block_mining_speed` | Boosts mining speed against blocks in a given tag. |
+| `silentgear:negate_damage` | Reduces damage from certain sources when wearing matching armor. |
+| `silentgear:synergy_multiplier` | Modifies the synergy bonus calculated for crafted parts. |
+| `silentgear:item_magnet` | Attracts nearby dropped items to the player. |
+| `silentgear:fireproof` | Prevents the gear item from being destroyed in fire or lava. |
+| `silentgear:wind_blast` | Creates a wind-charge-like explosion on attack. |

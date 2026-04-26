@@ -1,0 +1,145 @@
+---
+title: "Materials: the building blocks of gear in Silent Gear"
+description: "Materials define stats, traits, and visuals on gear. Learn categories, grades from E to SSS, and how properties combine to shape your tools and armor."
+---
+
+Materials are the raw inputs you feed into gear parts. Every piece of wood, iron ingot, diamond, or custom alloy you use contributes its own set of stats and traits to the final item. Understanding materials is the foundation of building great gear in Silent Gear.
+
+## What are materials?
+
+A material is any item or set of items recognised by Silent Gear as a valid crafting ingredient for gear parts. The mod ships with definitions for vanilla materials (wood, stone, iron, gold, diamond, netherite) and adds many of its own. Data packs and other mods can register entirely new materials, making the system fully extensible.
+
+Materials are **not** interchangeable — each one provides different numeric properties and may unlock special traits. Choosing the right combination of materials for each part is the primary way you customise and optimise gear.
+
+<Note>
+Open the **Material Book** (`/give @s silentgear:material_book`) at any time to browse every loaded material, see its stats per part type, and check which categories it belongs to.
+</Note>
+
+## Material categories
+
+Every material belongs to one or more categories. Categories determine which part types a material is compatible with and how modpack authors can filter material pools.
+
+| Category | Description |
+|---|---|
+| `metal` | Smelted metals: iron, gold, alloys, etc. |
+| `gem` | Crystalline materials: diamond, emerald, quartz, etc. |
+| `rock` | Stone-based materials: cobblestone, blackstone, etc. |
+| `dust` | Ground powders and fine particles |
+| `cloth` | Woven fabrics: wool, leather derivatives, etc. |
+| `fiber` | Raw fibrous materials used in strings and cords |
+| `wood` | All wood and plank variants |
+| `organic` | Biological materials: bone, feather, flesh, etc. |
+| `slime` | Slime-based materials |
+| `sheet` | Flat materials: sheets, plates, scales |
+| `intangible` | Non-physical or magical materials |
+| `basic` | Progression tier: starter-level materials |
+| `intermediate` | Progression tier: mid-game materials |
+| `advanced` | Progression tier: late-game materials |
+| `endgame` | Progression tier: endgame materials |
+
+Categories like `basic`, `intermediate`, `advanced`, and `endgame` are used primarily for progression gating and loot table filtering rather than crafting restrictions.
+
+## Properties contributed by materials
+
+Each material provides values for one or more gear properties. The final stat on a finished item is computed by averaging the contributions from every part that carries that property. Properties are grouped by the type of gear they apply to.
+
+### General properties
+
+| Property | Description | Grade-affected |
+|---|---|---|
+| `durability` | How many uses the gear has before breaking | Yes |
+| `armor_durability` | Durability multiplier for armor pieces | Yes |
+| `repair_efficiency` | How effective repair operations are | No |
+| `repair_value` | How much durability is restored per repair unit | No |
+| `enchantment_value` | Enchantability (higher = better enchants) | Yes |
+| `charging_value` | Energy charging rate for powered items | No |
+| `rarity` | Display rarity of the final item | No |
+
+### Harvest properties
+
+| Property | Description | Grade-affected |
+|---|---|---|
+| `harvest_tier` | Mining tier (determines what blocks can be broken) | No |
+| `harvest_speed` | How quickly blocks are mined | Yes |
+| `block_reach` | Bonus or penalty to block interaction range | No |
+
+### Attack properties
+
+| Property | Description | Grade-affected |
+|---|---|---|
+| `attack_damage` | Melee damage dealt | Yes |
+| `attack_speed` | Attack cooldown modifier | No |
+| `attack_reach` | Bonus or penalty to melee attack range | No |
+| `magic_damage` | Additional magic damage on hit | Yes |
+
+### Projectile properties
+
+| Property | Description | Grade-affected |
+|---|---|---|
+| `ranged_damage` | Damage multiplier for projectiles | Yes |
+| `draw_speed` | How fast bows/crossbows are drawn | No |
+| `projectile_speed` | How fast projectiles travel | No |
+| `projectile_accuracy` | Shot accuracy / spread reduction | No |
+
+### Armor properties
+
+| Property | Description | Grade-affected |
+|---|---|---|
+| `armor` | Armor points provided | Yes |
+| `armor_toughness` | Armor toughness against heavy hits | Yes |
+| `knockback_resistance` | Resistance to knockback | Yes |
+| `magic_armor` | Resistance to magic damage | Yes |
+
+Properties marked **Grade-affected** receive a bonus multiplier when the material has been graded (see below).
+
+## Simple vs. compound materials
+
+Materials come in two forms:
+
+- **Simple** — A single item (e.g., an iron ingot). Used directly as a crafting ingredient.
+- **Compound** — Made from multiple simple materials blended together in the Alloy Maker. Compound materials inherit a weighted mix of each ingredient's properties and traits.
+
+Most materials players interact with are simple. Compound materials let you dial in custom stat combinations that no single material provides.
+
+## Material grades
+
+Materials can be graded using the **Grader** block. Graded materials provide a bonus to all grade-affected stats. The grade is determined randomly when a catalyst is used; higher-tier catalysts shift the distribution toward better grades.
+
+| Grade | Stat bonus |
+|---|---|
+| `NONE` | 0% (default, ungraded) |
+| `E` | +1% |
+| `D` | +2% |
+| `C` | +3% |
+| `B` | +4% |
+| `A` | +5% |
+| `S` | +10% |
+| `SS` | +15% |
+| `SSS` | +25% |
+
+Grades follow a normal (bell-curve) distribution. Catalyst tier shifts the median: tier 1 catalysts produce a median of C, tier 2 produces B, and so on. The standard deviation is configurable.
+
+<Tip>
+Grading is most impactful on high base-value materials. Grading an SSS diamond main part is worth far more than grading a wood part to the same grade.
+</Tip>
+
+## Parent materials
+
+Some materials share a parent. Child materials inherit stats and traits from their parent unless they define their own values. This is commonly used for wood variants — different plank types share the same underlying `wood` parent but may differ in color. Most materials players encounter do not have parents.
+
+## Further reading
+
+<CardGroup cols={2}>
+  <Card title="Parts" href="/concepts/parts">
+    Learn how materials are assembled into gear parts.
+  </Card>
+  <Card title="Traits" href="/concepts/traits">
+    See how materials contribute special abilities to gear.
+  </Card>
+  <Card title="Blueprints" href="/concepts/blueprints">
+    Use blueprints to craft parts from your chosen materials.
+  </Card>
+  <Card title="Gear Types" href="/concepts/gear-types">
+    Explore the full catalog of tools, weapons, and armor.
+  </Card>
+</CardGroup>

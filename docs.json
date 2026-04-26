@@ -1,126 +1,97 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
-  "name": "Mintlify Starter Kit",
+  "name": "Silent Gear",
+  "theme": "maple",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#7c7c7c",
+    "light": "#040404",
+    "dark": "#b7b7b7"
   },
   "favicon": "/favicon.svg",
+  "navbar": {
+    "primary": {
+      "type": "github",
+      "href": "https://github.com/SilentChaos512/Silent-Gear"
+    }
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/SilentChaos512/Silent-Gear"
+    }
+  },
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Getting Started",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Introduction",
             "pages": [
-              "index",
-              "quickstart",
-              "development"
+              "introduction",
+              "getting-started/installation",
+              "getting-started/first-gear"
             ]
           },
           {
-            "group": "Customization",
+            "group": "Core Concepts",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
+              "concepts/materials",
+              "concepts/parts",
+              "concepts/traits",
+              "concepts/gear-types",
+              "concepts/blueprints"
             ]
           },
           {
-            "group": "Writing content",
+            "group": "Crafting & Upgrading",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/components",
-              "essentials/reusable-snippets"
+              "guides/crafting",
+              "guides/upgrading-gear",
+              "guides/repairing-gear",
+              "guides/grading"
             ]
           },
           {
-            "group": "Agent ready",
+            "group": "Machines & Blocks",
             "pages": [
-              "agent-ready/prompt",
-              "agent-ready/visibility",
-              "agent-ready/contextual",
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
+              "machines/overview",
+              "machines/alloy-makers",
+              "machines/salvager",
+              "machines/starlight-charger"
             ]
           }
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "Data Packs & Add-ons",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "Data Pack Basics",
             "pages": [
-              "api-reference/introduction"
+              "datapacks/overview",
+              "datapacks/materials",
+              "datapacks/parts",
+              "datapacks/traits"
             ]
           },
           {
-            "group": "Endpoint examples",
+            "group": "Add-on Development",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "addons/setup",
+              "addons/custom-gear-types",
+              "addons/custom-part-types",
+              "addons/custom-trait-effects"
+            ]
+          },
+          {
+            "group": "Configuration",
+            "pages": [
+              "configuration/config-options",
+              "configuration/commands"
             ]
           }
         ]
       }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
-  },
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
-  },
-  "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
-      }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
-    }
-  },
-  "contextual": {
-    "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
-  },
-  "footer": {
-    "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
-    }
+    ]
   }
 }

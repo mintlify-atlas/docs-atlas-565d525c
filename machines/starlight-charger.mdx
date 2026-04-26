@@ -1,0 +1,72 @@
+---
+title: "Starlight Charger: apply the starcharged modifier"
+description: "The Starlight Charger collects starlight energy at night to apply the starcharged modifier to materials, unlocking special properties in Azure Silver gear."
+---
+
+The Starlight Charger is a pedestal-style block that collects starlight energy during the night and uses it to apply the **starcharged** modifier to materials. Materials with this modifier unlock special properties when used in gear — particularly those based on azure silver and related alloys.
+
+## Placement requirements
+
+By default, the Starlight Charger only gathers energy when it has a clear, unobstructed view of the sky directly above it. Solid blocks, slabs, or other blocks placed above the charger will prevent it from working.
+
+<Tip>
+You can disable the sky requirement by setting `starlight_charger.requires_view_of_sky` to `false` in the config, which lets you use the charger underground or inside a building.
+</Tip>
+
+## The multi-block structure
+
+The Starlight Charger checks for pillar blocks at each of its four diagonal corners (3 blocks away in both horizontal directions, with the top block of the pillar 2 blocks above ground level). The block type at the top of each corner pillar determines the structure level, which controls the maximum charge tier the charger can apply:
+
+| Pillar block | Structure level |
+|---|---|
+| Crimson Steel Block | 1 |
+| Azure Electrum Block | 2 |
+| Tyrian Steel Block | 3 |
+
+All four corners must have the same block type. The charger takes the minimum pillar level across all four corners.
+
+## Charging a material
+
+<Steps>
+  <Step title="Build the multi-block structure">
+    Place the Starlight Charger and build four corner pillars at the diagonal positions. Use the same tier of block on all four pillars to set the structure level.
+  </Step>
+  <Step title="Wait for energy">
+    The charger gathers energy at night (or as configured). Watch the energy bar in the GUI to confirm it is charging.
+  </Step>
+  <Step title="Insert a material and a catalyst">
+    Open the GUI. Place the material you want to charge in the left (input) slot. Place a charging catalyst in the middle slot. The catalyst tier must be at or below the structure level.
+  </Step>
+  <Step title="Collect the charged material">
+    Once processing completes, collect the starcharged material from the output slot on the right. The material now carries the starcharged modifier.
+  </Step>
+</Steps>
+
+<Note>
+You can also charge gear **parts** (items with a material list data component, such as crafted parts) if `starlight_charger.can_charge_parts` is enabled in config. This is disabled by default.
+</Note>
+
+## What gets charged
+
+The charger accepts any material that:
+
+- Is a valid Silent Gear material (simple material item)
+- Does not already have a charged modifier applied
+
+Items that already carry a `ChargedMaterialModifier` (including the starcharged modifier itself) are rejected by the input slot. Each material can only be charged once.
+
+## Config reference
+
+All options are under the `starlight_charger` section in the Silent Gear common config file.
+
+| Option | Default | Description |
+|---|---|---|
+| `charge_rate` | `100` | Energy gathered per tick during an active period. |
+| `max_charge` | `1,000,000` | Maximum energy the charger can store. |
+| `work_time` | `NIGHTTIME` | When the charger gathers energy. Options: `NIGHTTIME`, `DAYTIME`, `ANYTIME`. |
+| `requires_view_of_sky` | `true` | If true, a clear sky view is required to gather energy. |
+| `can_charge_parts` | `false` | If true, allows charging the individual materials inside a crafted gear part. |
+
+<Warning>
+Setting `charge_rate` or `max_charge` to very large values may cause integer overflow in the charge counter. The code clamps the stored charge to `max_charge` on each tick to prevent this, but extremely large values are not recommended.
+</Warning>

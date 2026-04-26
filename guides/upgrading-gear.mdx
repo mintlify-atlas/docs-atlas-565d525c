@@ -1,0 +1,112 @@
+---
+title: "Upgrade and modify Silent Gear items after crafting"
+description: "Swap parts in and out of existing gear, add tip and coating upgrades, and use the smithing table and Mod Kit to customize your equipment."
+---
+
+Silent Gear items are not locked to the materials you used when you first crafted them. You can swap out most non-structural parts at any time, add upgrade parts, or apply coatings — all without losing the gear item itself. This page covers every method available for modifying existing gear.
+
+## Part swapping at the crafting table
+
+The most common way to modify gear is the **part swap recipe** (`GearPartSwapRecipe`). Place a gear item and one or more replacement parts anywhere in a crafting grid (no fixed pattern required). The old parts of the matching type are removed and the new parts are installed.
+
+<Steps>
+  <Step title="Prepare the replacement part">
+    Craft the new part using its blueprint and your chosen material.
+  </Step>
+  <Step title="Open a crafting table">
+    Any 3×3 crafting grid works.
+  </Step>
+  <Step title="Place gear and new part">
+    Put the gear item and the replacement part anywhere in the grid — position does not matter.
+  </Step>
+  <Step title="Collect the modified gear">
+    The output slot shows the gear with the new part installed. If the old part was replaced, it is returned to an adjacent slot (unless `destroySwappedParts` is enabled in config).
+  </Step>
+</Steps>
+
+### Which parts can be swapped
+
+You can swap any **non-main** part type that the gear supports. Swappable part types include:
+
+| Part type | Description |
+|---|---|
+| `TIP` | Tip upgrade on tool/weapon heads |
+| `BINDING` | Handle wrapping on tools |
+| `COATING` | Surface treatment (applied via smithing table too) |
+| `GRIP` | Handle wrap on weapons |
+| `LINING` | Padding inside armor |
+| `SETTING` | Gem setting in jewelry-type gear |
+| `MISC_UPGRADE` | Miscellaneous upgrade slots |
+
+The **main part** (tool head, armor plate) cannot be swapped through this recipe — it defines the gear type and must stay fixed after initial construction.
+
+<Note>Each part type has a maximum count per item (`maxPerItem`). If you add a part when the limit is already reached, the oldest part of that type is removed first. If the limit is not yet reached, the new part is simply added alongside existing ones.</Note>
+
+### `destroySwappedParts` config
+
+By default, replaced parts are returned to you. If the `destroySwappedParts` config option is set to `true`, the old part is destroyed instead of being returned. Check `common.toml` under `gear.upgrades.destroy_swapped_parts`.
+
+### `upgradesInAnvilOnly` config
+
+If `gear.upgrades.apply_in_anvil_only` is set to `true` in `common.toml`, upgrade parts (tip, coating, etc.) can only be applied using an anvil, not at a crafting table.
+
+## Adding a tip upgrade
+
+Tip upgrades attach to the head of a tool or weapon and add bonus effects, such as a quartz tip that increases attack damage. To add a tip:
+
+1. Craft a tip part using the **Tip Blueprint** and your chosen material.
+2. Place your gear item and the tip part in a crafting grid together.
+3. The tip is attached to the gear.
+
+<Tip>Quartz is a popular early-game tip material, adding harvest speed and attack damage. Higher-tier materials provide more powerful bonuses.</Tip>
+
+## Applying coatings
+
+Coatings are surface treatments that modify gear properties. There are two ways to apply a coating:
+
+### Crafting table (default)
+
+Place your gear and a coating part in a crafting grid. The coating part swaps in the same way as any other part.
+
+### Smithing table (CoatingSmithingRecipe)
+
+Use the **Coating Smithing Template** item in a smithing table alongside your gear and a raw coating material. This method creates the coating part internally and applies it in one step, without needing to pre-craft a coating part.
+
+<Steps>
+  <Step title="Obtain a Coating Smithing Template">
+    Craft or find the `coating_smithing_template` item.
+  </Step>
+  <Step title="Open a smithing table">
+    Place the smithing table and right-click to open it.
+  </Step>
+  <Step title="Insert items">
+    Put the Coating Smithing Template in the template slot, your gear in the base slot, and the raw coating material in the addition slot.
+  </Step>
+  <Step title="Retrieve the coated gear">
+    The gear exits the smithing table with the coating applied. Any existing coating on the gear is replaced.
+  </Step>
+</Steps>
+
+<Note>The CoatingSmithingRecipe also resets the gear's damage value to zero when it applies a coating.</Note>
+
+## Smithing table upgrades (UpgradeSmithingRecipe)
+
+Beyond coatings, the smithing table supports general upgrade recipes via `UpgradeSmithingRecipe`. These follow the same three-slot smithing table layout (template + base gear + addition part) and add a part to the gear without removing any existing parts of the same type — provided the gear does not already contain that exact part and the part is compatible with the gear type.
+
+## Removing parts with the Mod Kit
+
+The **Mod Kit** (`MOD_KIT`) lets you remove a specific part from gear without opening a crafting table. It is a reusable, uncommon-rarity item that stores which part type to remove.
+
+<Steps>
+  <Step title="Configure the Mod Kit">
+    Right-click the Mod Kit to cycle through the removable part types. The item tooltip shows which type is currently selected.
+  </Step>
+  <Step title="Place gear and Mod Kit in a crafting grid">
+    The `ModKitRemovePartRecipe` requires only the gear and the configured Mod Kit — no specific layout.
+  </Step>
+  <Step title="Collect the result">
+    The gear is returned to the output slot without the removed part. The removed part item is returned to a remaining slot. The Mod Kit is also returned (it is not consumed).
+  </Step>
+</Steps>
+
+<Warning>If the gear does not have a part of the selected type, the recipe will not match and nothing will happen.</Warning>

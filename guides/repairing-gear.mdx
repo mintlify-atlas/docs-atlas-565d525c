@@ -1,0 +1,91 @@
+---
+title: "Repair Silent Gear tools and armor with repair kits"
+description: "Restore durability to Silent Gear items using crafting table quick repair, anvil repair, or tiered repair kits pre-loaded with materials."
+---
+
+Silent Gear items do not break permanently by default — they can be repaired using several methods. The right method depends on what stage of the game you are in and how much durability you need to restore.
+
+<Note>If `gear.breaks_permanently` is set to `true` in `common.toml`, gear breaks permanently like vanilla tools and cannot be repaired.</Note>
+
+## Quick repair at the crafting table
+
+The quickest way to repair gear is the **quick repair recipe** (`QuickRepairRecipe`). Place your damaged gear item in any crafting grid slot alongside a **repair kit** and, optionally, loose repair materials.
+
+- Materials compatible with the gear's main part are used first, consuming their repair value multiplied by the kit efficiency and the gear's `REPAIR_EFFICIENCY` property.
+- After loose materials are used, the repair kit draws on its stored materials to cover any remaining damage.
+- The repair kit is returned to your inventory with its stored materials reduced accordingly.
+
+<Steps>
+  <Step title="Fill a repair kit with materials (if needed)">
+    Shift-click a compatible raw material onto a repair kit in your inventory to load it. The kit tooltip shows current fill level and capacity.
+  </Step>
+  <Step title="Open a crafting grid">
+    Any 2-slot or larger crafting area works (the recipe requires at least 2 slots).
+  </Step>
+  <Step title="Place gear and repair kit">
+    Put the damaged gear item and the repair kit in the grid. Add loose raw materials alongside them if you want to use up bulk materials before drawing from the kit.
+  </Step>
+  <Step title="Collect the repaired gear">
+    The gear's durability increases based on the materials used, the kit's efficiency, and the gear's repair efficiency stat. The repair count on the item increments by one each time.
+  </Step>
+</Steps>
+
+<Warning>Only one gear item and one repair kit are allowed per quick repair recipe. Adding a second gear item or a second kit will prevent the recipe from matching.</Warning>
+
+## Anvil repair
+
+You can also repair Silent Gear items in a vanilla **anvil** using compatible raw materials. The effectiveness of anvil repairs is controlled by the `gear.repairs.anvil_effectiveness` config option (default `0.5`, range `0.0`–`1.0`). Setting it to `0` disables anvil repairs entirely.
+
+Anvil repair costs experience levels as usual and increments the item's repair cost over time.
+
+## Repair kits
+
+Repair kits are pre-loadable containers of repair materials. There are five tiers, each with different capacity (how many material units it can hold) and efficiency (how much durability is restored per unit of material consumed).
+
+| Repair kit | Capacity (default) | Efficiency (default) | Rarity |
+|---|---|---|---|
+| Very Crude Repair Kit | 8 | 30% | Common |
+| Crude Repair Kit | 16 | 35% | Common |
+| Sturdy Repair Kit | 32 | 40% | Uncommon |
+| Crimson Repair Kit | 48 | 45% | Rare |
+| Azure Repair Kit | 64 | 50% | Epic |
+
+All values are configurable in `common.toml` under `item.repair_kits`:
+- `capacity.very_crude`, `capacity.crude`, `capacity.sturdy`, `capacity.crimson`, `capacity.azure`
+- `efficiency.very_crude`, `efficiency.crude`, `efficiency.sturdy`, `efficiency.crimson`, `efficiency.azure`
+
+<Tip>Higher-tier repair kits are more efficient, meaning they restore more durability from the same amount of material. Invest in a Sturdy or Crimson kit as soon as you can.</Tip>
+
+### Loading a repair kit
+
+To fill a repair kit, shift-click (or interact with) a compatible material item directly onto the repair kit in your inventory. The kit stores the material until it is used during a repair operation. You can load multiple different material types into the same kit.
+
+The item tooltip shows:
+- **Efficiency** — the percentage of repair value applied per material unit
+- **Capacity** — `current / max` stored material amount
+- A list of stored materials and their amounts once the kit is loaded
+
+### Repair efficiency formula
+
+The amount of durability restored by a repair operation follows this formula:
+
+```
+durability_restored = repair_value × kit_efficiency × gear_repair_efficiency
+```
+
+Where:
+- `repair_value` is the base repair value of the material(s) used
+- `kit_efficiency` is the repair kit's efficiency stat (e.g., `0.4` for a Sturdy kit)
+- `gear_repair_efficiency` is the gear's `REPAIR_EFFICIENCY` property, derived from its materials
+
+Gears crafted from materials with a high repair efficiency property will get more out of each repair operation.
+
+### Missing repair kit fallback
+
+If you do not have a repair kit, you can still attempt a quick repair using only loose materials — but only if `item.repair_kits.efficiency.missing` is set to a value greater than `0.0` in config. This defaults to `0.0`, meaning repair kits are required unless you change this setting.
+
+## Self-repair trait
+
+Some gear materials grant the **SelfRepair** trait. Gear with this trait automatically regains a small amount of durability over time while in the player's inventory, without any player action required. The rate depends on the trait level and the gear's repair efficiency.
+
+<Tip>Materials that provide the SelfRepair trait are useful for gear that sees constant use — axes, armor, and bows in particular.</Tip>

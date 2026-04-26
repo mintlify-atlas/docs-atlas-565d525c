@@ -1,0 +1,88 @@
+---
+title: "Grade materials in Silent Gear to boost gear stats"
+description: "Use the Material Grader block with catalyst items to assign letter grades to raw materials, improving the stats of any gear crafted from them."
+---
+
+Material grades are a bonus system that improves the stats of raw materials before you use them in gear. A graded material produces better gear than an ungraded one of the same type. Grading happens in the **Material Grader** block and is probabilistic — the grade you receive depends on which catalyst you use and a configurable distribution.
+
+## Grade tiers
+
+Grades are defined in `MaterialGrade` and range from no grade (`NONE`) up to the theoretical maximum (`MAX`). The grades available in normal play, along with their bonus percentages, are:
+
+| Grade | Stat bonus |
+|---|---|
+| NONE | +0% |
+| E | +1% |
+| D | +2% |
+| C | +3% |
+| B | +4% |
+| A | +5% |
+| S | +10% |
+| SS | +15% |
+| SSS | +25% |
+
+The bonus applies to gear properties where `affectedByGrades` is enabled — this includes most numerical properties such as durability, harvest speed, and attack damage.
+
+<Note>The `MAX` grade (30% bonus) is the hard cap used internally. It is not normally obtainable through the grader under default settings.</Note>
+
+## The Material Grader block
+
+The Material Grader is a solid block that processes one input material at a time. Place it in the world and right-click to open its GUI.
+
+The GUI has four slots:
+- **Input slot** — place the raw material or part item you want to grade here
+- **Catalyst slot** — place a catalyst item here; grading does not start without one
+- **Output slots (×4)** — graded items appear here after processing
+
+Each grading cycle takes **5 seconds** by default. One catalyst item is consumed per cycle. The block lights up (`LIT` block state) while it is processing.
+
+<Note>The grader can grade materials that already have a grade assigned, but only if the new grade would be an improvement. A material at grade A will be graded again, but the output is kept only if the result is A or higher.</Note>
+
+## Catalyst items and tiers
+
+The grade you receive is influenced by the catalyst tier. Higher-tier catalysts shift the median grade upward. The default median at tier 1 is **C** (configurable), and each additional catalyst tier adds one step to the median.
+
+| Tier | Default catalyst item | Median grade (default config) |
+|---|---|---|
+| 1 | Glowing Dust | C |
+| 2 | Blazing Dust | B (C + 1 tier) |
+| 3 | Glittery Dust | A (C + 2 tiers) |
+| 4 | *(empty by default — add via data pack)* | S (C + 3 tiers) |
+| 5 | *(empty by default — add via data pack)* | SS (C + 4 tiers) |
+
+<Tip>Tier 3 (Glittery Dust) is the highest catalyst available by default and shifts the median grade to A, making S and SS grades achievable through normal play.</Tip>
+
+Custom catalyst items can be added to the `silentgear:grader_catalysts/tier1` through `silentgear:grader_catalysts/tier5` item tags via a data pack.
+
+## How grades are selected
+
+Grading is **probabilistic**, using a normal (bell-curve) distribution centred on the median grade for the catalyst tier used. The spread of the curve is controlled by the standard deviation setting.
+
+The parameters are:
+- **`material_grader.median_grade`** (default: `C`) — the most common grade produced by a tier 1 catalyst. Higher-tier catalysts add one step per tier above 1.
+- **`material_grader.standard_deviation`** (default: `1.5`) — the spread of the distribution. Larger values make both higher and lower grades more common; very large values flatten the curve and yield mostly extreme grades.
+
+The selected grade is clamped to a minimum of E (grade cannot be NONE) and a maximum of MAX. Graded results that are not an improvement on the existing grade are silently discarded — the input material is consumed but no output is produced.
+
+<Warning>If all four output slots are full, the grader pauses processing. Clear the output slots regularly to keep it running.</Warning>
+
+## Grading gear parts
+
+By default, the grader only processes raw material items. If you enable `material_grader.can_grade_parts` in `common.toml`, the grader can also grade the materials inside already-crafted gear parts.
+
+When grading a part:
+- The grader targets the lowest-graded material in the part.
+- If the randomly selected grade is an improvement, that material's grade is upgraded in-place within the part item.
+- The part itself is moved to an output slot.
+
+This is useful for improving parts you have already crafted without needing to remake them from scratch.
+
+## Config reference
+
+All Material Grader settings live under the `material_grader` section in `common.toml`:
+
+| Config key | Default | Description |
+|---|---|---|
+| `median_grade` | `C` | Most common grade at catalyst tier 1 |
+| `standard_deviation` | `1.5` | Spread of the grade distribution |
+| `can_grade_parts` | `false` | Allow grading of gear part items |

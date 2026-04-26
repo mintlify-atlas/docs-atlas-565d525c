@@ -1,0 +1,109 @@
+---
+title: "Traits: passive and active special abilities on gear"
+description: "Traits are special abilities granted by gear materials. They stack to a max level and can be conditional, making material choice a key strategic decision."
+---
+
+Every material in Silent Gear can contribute one or more **traits** to a piece of gear. A trait is a named ability — anything from reducing durability damage and self-repairing the item to launching a wind blast when you swing. Traits are a primary reason to care deeply about which materials you combine.
+
+## How traits work
+
+When you craft gear, the mod collects the traits from every material across all parts, then totals up the level for each unique trait. If multiple parts provide the same trait, their levels stack — up to the maximum level defined for that trait. The combined trait list is stored on the item and applied every time the relevant game event occurs.
+
+Traits appear in the gear's tooltip. Each entry shows the trait name and its current level (e.g., **Flammable 2**).
+
+## Trait levels
+
+Trait effects scale with level. A self-repair trait at level 3 repairs more durability per tick than the same trait at level 1. The maximum level cap varies per trait and is defined in the trait's data file. Exceeding the cap from material overlap is automatically clamped — stacking more materials than necessary for a given trait provides no extra benefit.
+
+<Warning>
+Not all traits are beneficial. Some traits (like Brittle, which increases durability damage taken) can be **negative**. Always check the tooltip on your crafted parts before assembling gear.
+</Warning>
+
+## Conditional traits
+
+A trait entry in the tooltip marked with an asterisk (`*`) is **conditional** — it only activates when certain criteria are met. Common conditions include:
+
+- The item must be equipped in a specific slot
+- A minimum damage ratio (how damaged the item is) must be met
+- The wielder must have a particular effect or be in a specific biome
+
+Hover over the trait name in the tooltip for details on its activation condition.
+
+## Synergy
+
+Synergy is a multiplier that increases when all materials in a piece of gear share categories. It amplifies grade-sensitive stats. The `SynergyTraitEffect` (used by synergy-related traits) adds to this multiplier per trait level, within a configurable range. Building single-category gear maximises synergy and is often more powerful than mixing material types.
+
+## Trait effects reference
+
+Each trait is built from one or more **trait effects**. The effect type determines what the trait actually does mechanically. Silent Gear provides the following built-in effect types:
+
+<AccordionGroup>
+  <Accordion title="AttachDataComponentsTraitEffect">
+    Attaches additional data components to the gear item. Used for traits that need to store or expose extra item metadata.
+  </Accordion>
+  <Accordion title="AttributeTraitEffect">
+    Adds or modifies Minecraft entity attribute modifiers (e.g., movement speed, attack damage, knockback resistance) on the wielder or wearer. Values can differ per trait level and per gear type. Modifiers are applied per equipment slot group.
+  </Accordion>
+  <Accordion title="BlockFillerTraitEffect">
+    When the gear interacts with a block, this effect can fill adjacent air blocks (e.g., placing a block in the world). Used for traits that build or fill terrain automatically.
+  </Accordion>
+  <Accordion title="BlockMiningSpeedTraitEffect">
+    Modifies the mining speed multiplier for specific block states. Allows traits to make certain tools faster against particular materials or block types beyond the base harvest speed stat.
+  </Accordion>
+  <Accordion title="BlockPlacerTraitEffect">
+    Places a block in the world when the item is used on a surface. Used for traits that automatically deploy blocks as part of their activation.
+  </Accordion>
+  <Accordion title="BonusDropsTraitEffect">
+    Adds extra item drops when breaking blocks or killing entities. Functions similarly to the Fortune enchantment — higher trait levels yield more bonus drops.
+  </Accordion>
+  <Accordion title="CancelEffectsTraitEffect">
+    Cancels or suppresses specific status effects on the wearer or wielder. Useful for traits that provide immunity to debuffs like poison, wither, or blindness.
+  </Accordion>
+  <Accordion title="DurabilityTraitEffect">
+    Modifies the durability damage taken by the gear on each use. A negative effect scale reduces damage taken (like Unbreaking); a positive scale increases it (Brittle). Activation is probabilistic — chance scales with trait level.
+  </Accordion>
+  <Accordion title="EnchantmentTraitEffect">
+    Applies an enchantment-like effect to the gear. This can simulate vanilla enchantments (e.g., Silk Touch, Looting) through the trait system rather than the enchanting table.
+  </Accordion>
+  <Accordion title="ExtraDamageTraitEffect">
+    Deals additional damage on attack beyond the base attack damage stat. The bonus can be conditional on the target type (e.g., extra damage to undead or arthropods).
+  </Accordion>
+  <Accordion title="FireproofTraitEffect">
+    Makes the gear item itself immune to fire and lava damage. The item will not be destroyed if it falls into lava, similar to netherite items.
+  </Accordion>
+  <Accordion title="ItemMagnetTraitEffect">
+    Pulls nearby item entities toward the player when the gear is in use or equipped. Useful for harvest tools that automatically collect drops.
+  </Accordion>
+  <Accordion title="NegateDamageTraitEffect">
+    Cancels incoming damage to the player from specific damage sources. Higher trait levels provide a larger chance or magnitude of negation.
+  </Accordion>
+  <Accordion title="NumberPropertyModifierTraitEffect">
+    Directly modifies a numeric gear property (e.g., attack damage, harvest speed) by a fixed amount or percentage per trait level. Used to apply trait-level stat overrides at the property calculation stage.
+  </Accordion>
+  <Accordion title="SelfRepairTraitEffect">
+    Restores durability to the gear over time. Each second there is a percentage chance (scaled by trait level) to repair a fixed number of durability points. Only activates when the item is equipped or in the player's inventory.
+  </Accordion>
+  <Accordion title="SynergyTraitEffect">
+    Modifies the synergy multiplier. Each trait level adds or subtracts a configured value from synergy, but only when the current synergy value falls within a defined range. Enables traits that reward or penalise material mixing.
+  </Accordion>
+  <Accordion title="TargetEffectTraitEffect">
+    Applies a status effect to an entity hit by the gear. Common examples include poisoning, slowing, or setting targets on fire. Duration and potency can scale with trait level.
+  </Accordion>
+  <Accordion title="WielderEffectTraitEffect">
+    Applies a status effect to the gear's owner while the item is equipped or held. Used for traits that provide passive buffs (e.g., night vision, speed, regeneration) to the player.
+  </Accordion>
+  <Accordion title="WindBlastTraitEffect">
+    Launches a wind blast projectile when the item is swung. The projectile can knock back entities it hits, similar to the Wind Charge item added in later Minecraft versions.
+  </Accordion>
+</AccordionGroup>
+
+## Further reading
+
+<CardGroup cols={2}>
+  <Card title="Materials" href="/concepts/materials">
+    See which materials provide which traits.
+  </Card>
+  <Card title="Parts" href="/concepts/parts">
+    Understand how traits flow from materials through parts into gear.
+  </Card>
+</CardGroup>

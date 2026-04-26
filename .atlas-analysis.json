@@ -1,0 +1,112 @@
+{
+  "projectType": "general",
+  "projectName": "Silent Gear",
+  "projectDescription": "A Minecraft NeoForge mod providing modular, fully customizable tools, weapons, and armor crafted from interchangeable parts and materials defined via data packs.",
+  "theme": "maple",
+  "primaryColor": "#7c7c7c",
+  "lightColor": "#040404",
+  "darkColor": "#b7b7b7",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Getting Started",
+        "groups": [
+          {
+            "group": "Introduction",
+            "pages": [
+              "introduction",
+              "getting-started/installation",
+              "getting-started/first-gear"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts/materials",
+              "concepts/parts",
+              "concepts/traits",
+              "concepts/gear-types",
+              "concepts/blueprints"
+            ]
+          },
+          {
+            "group": "Crafting & Upgrading",
+            "pages": [
+              "guides/crafting",
+              "guides/upgrading-gear",
+              "guides/repairing-gear",
+              "guides/grading"
+            ]
+          },
+          {
+            "group": "Machines & Blocks",
+            "pages": [
+              "machines/overview",
+              "machines/alloy-makers",
+              "machines/salvager",
+              "machines/starlight-charger"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Data Packs & Add-ons",
+        "groups": [
+          {
+            "group": "Data Pack Basics",
+            "pages": [
+              "datapacks/overview",
+              "datapacks/materials",
+              "datapacks/parts",
+              "datapacks/traits"
+            ]
+          },
+          {
+            "group": "Add-on Development",
+            "pages": [
+              "addons/setup",
+              "addons/custom-gear-types",
+              "addons/custom-part-types",
+              "addons/custom-trait-effects"
+            ]
+          },
+          {
+            "group": "Configuration",
+            "pages": [
+              "configuration/config-options",
+              "configuration/commands"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Modular gear system: every tool/weapon/armor piece is built from swappable parts (main, rod, tip, grip, binding, coating, etc.)",
+    "Data pack driven: materials, parts, and traits are fully defined via JSON data packs — no code required",
+    "25+ gear types including swords, hammers, paxels, bows, crossbows, tridents, armor, and curios",
+    "Trait system with 20+ built-in trait effects (attribute bonuses, enchantments, self-repair, magnet, etc.)",
+    "Material grading system that affects gear stats",
+    "Alloy-making machines to create custom compound materials",
+    "Blueprint/template crafting system that eliminates recipe conflicts",
+    "Add-on API: add new gear types, part types, and trait types in Java",
+    "Compatibility with JEI, EMI, Curios/Caelus, and NeoForge",
+    "Material Book and in-game guide for player reference"
+  ],
+  "publicApiSurface": [
+    "GearType (api/item/GearType.java) — defines tool/weapon/armor categories",
+    "GearItem / GearTool / GearArmor / GearWeapon interfaces (api/item/)",
+    "Material (api/material/Material.java) — material data model and serialization",
+    "MaterialSerializer (api/material/MaterialSerializer.java) — data pack material loader",
+    "GearPart (api/part/GearPart.java) — part data model",
+    "PartType (api/part/PartType.java) — part slot definitions",
+    "PartSerializer (api/part/PartSerializer.java) — data pack part loader",
+    "TraitEffect / TraitEffectType (api/traits/) — custom trait effect API",
+    "ITraitCondition / TraitConditionSerializer (api/traits/) — trait condition API",
+    "GearProperty / NumberProperty / BooleanProperty (api/property/) — gear stat definitions",
+    "SGearCommand (/sgear) — in-game commands for materials, parts, traits, grades",
+    "Data pack: silentgear/materials/<id>.json — add/override materials",
+    "Data pack: silentgear/parts/<id>.json — add/override parts",
+    "Data pack: silentgear/traits/<id>.json — add/override traits"
+  ]
+}

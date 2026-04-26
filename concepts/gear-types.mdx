@@ -1,0 +1,149 @@
+---
+title: "Gear types: every tool and armor piece in Silent Gear"
+description: "Silent Gear adds 25+ gear types: harvest tools, melee and ranged weapons, armor, curios, and hybrids. Browse the full catalog to see what each type does."
+---
+
+Silent Gear replaces the standard fixed-recipe tools and armor with a fully modular crafting system. Every gear type has its own main part item, relevant property groups, and compatible part slots. This page catalogs all available gear types organized by category.
+
+## Harvest tools
+
+Harvest tools are primarily used to break blocks. They all inherit from the `harvest_tool` parent type and expose **harvest**, **attack**, and **general** property groups.
+
+| Gear type | Description |
+|---|---|
+| `pickaxe` | Mines stone, ores, and metal blocks. Standard pickaxe tool actions. |
+| `shovel` | Digs dirt, sand, gravel, and similar soft blocks. |
+| `axe` | Chops wood and strips logs. Also deals bonus damage to some targets. |
+| `hoe` | Tills soil and harvests crops. |
+| `shears` | Shears sheep, cuts leaves, and harvests cobwebs. |
+| `hammer` | A 3×3 area pickaxe. Slower but mines a 3-block-wide column. Built on top of `pickaxe`. |
+| `excavator` | A 3×3 area shovel. Digs wide trenches quickly. Built on top of `shovel`. |
+| `saw` | A 3×3 area axe. Fells entire trees at once. Built on top of `axe`. |
+| `sickle` | Harvests crops and plants in an area. Uses the hoe dig action. |
+| `mattock` | A multi-tool combining shovel, axe, and hoe functions. Ideal for farmers. |
+| `paxel` | Combines pickaxe, shovel, and axe into one tool. The ultimate all-rounder. |
+| `prospector_hammer` | A pickaxe variant with special ore-detection capabilities. |
+
+<Tip>
+The hammer, excavator, and saw are among the most material-intensive tools to craft, but they pay for themselves quickly in large mining or building projects.
+</Tip>
+
+## Melee weapons
+
+Melee weapons inherit from `melee_weapon` → `weapon` → `tool` and expose **attack** and **general** property groups.
+
+| Gear type | Description |
+|---|---|
+| `sword` | Standard melee weapon. Full sword tool actions including sweep attack. |
+| `katana` | A sword variant. Tuned for fast, precise strikes. |
+| `machete` | Combines sword sweep with axe dig. Effective for clearing vegetation in combat. |
+| `spear` | A reach weapon. Uses the sword dig action and is designed for extended range. |
+| `mace` | A heavy blunt weapon. No special tool actions — pure raw damage. |
+| `dagger` | A fast, light blade. Uses the sword dig action and excels at quick attacks. |
+| `knife` | A small cutting tool. Uses the sword dig action; can double as a utility item. |
+
+## Ranged weapons
+
+Ranged weapons inherit from `ranged_weapon` → `weapon` and expose **projectile** and **general** property groups. All three types use 4-frame draw animations.
+
+| Gear type | Description |
+|---|---|
+| `bow` | Fires arrows. Draw speed and projectile speed are key stats. |
+| `crossbow` | Fires arrows and fireworks. Loaded before firing; slower draw but higher base damage. |
+| `slingshot` | Fires small projectiles. A lighter alternative to the bow. |
+
+## Hybrid weapons
+
+Hybrid weapons expose both **attack** and **projectile** property groups, allowing melee and ranged stats to both matter.
+
+| Gear type | Description |
+|---|---|
+| `trident` | Can be thrown as a projectile or used in melee. Full trident tool actions. |
+
+## Other tools
+
+These tools don't fit neatly into harvest or combat categories. They use general and special property groups.
+
+| Gear type | Description |
+|---|---|
+| `fishing_rod` | Casts a fishing line. Cord and fletching parts influence casting behavior. |
+| `shield` | Blocks incoming damage. Uses armor durability scaling (×22.5 multiplier) rather than tool durability. |
+
+## Armor
+
+Armor pieces all inherit from the `armor` parent and expose **armor** and **general** property groups. Each piece uses a different armor durability multiplier that reflects vanilla proportions.
+
+| Gear type | Durability multiplier | Description |
+|---|---|---|
+| `helmet` | ×11 | Head slot protection. |
+| `chestplate` | ×16 | Chest slot protection — the highest durability piece. |
+| `leggings` | ×15 | Leg slot protection. |
+| `boots` | ×13 | Foot slot protection. |
+| `elytra` | ×25 | Back slot gliding wings with armor stats. |
+
+<Note>
+Armor durability is calculated differently from tool durability. The multiplier is applied to the `armor_durability` property, so higher-multiplier pieces benefit more from high-quality materials.
+</Note>
+
+## Curios
+
+Curio items use the Curios API for equipment slots. They expose only the **special** property group (traits and additive stats). No standard stats like durability or attack damage apply.
+
+| Gear type | Slot |
+|---|---|
+| `ring` | Ring slot (Curios) |
+| `necklace` | Necklace slot (Curios) |
+| `bracelet` | Wrist/bracelet slot (Curios) |
+
+<Note>
+Curio gear types require the **Curios API** mod to be installed. Without it, the items cannot be equipped in their intended slots.
+</Note>
+
+## Projectiles
+
+| Gear type | Description |
+|---|---|
+| `arrow` | Craftable arrows with material-based stats. Compatible with bows and crossbows. |
+
+## Gear type hierarchy
+
+Gear types form an inheritance tree. Child types inherit property groups and defaults from their parent:
+
+```
+ALL
+├── TOOL
+│   ├── HARVEST_TOOL
+│   │   ├── pickaxe → hammer, prospector_hammer
+│   │   ├── shovel → excavator
+│   │   ├── axe → saw
+│   │   ├── hoe → sickle
+│   │   ├── shears
+│   │   ├── mattock
+│   │   └── paxel
+│   ├── WEAPON
+│   │   ├── MELEE_WEAPON → sword, katana, machete, spear, mace, dagger, knife
+│   │   ├── RANGED_WEAPON → bow, crossbow, slingshot
+│   │   └── HYBRID_WEAPON → trident
+│   ├── fishing_rod
+│   └── shield
+├── ARMOR → helmet, chestplate, leggings, boots, elytra
+├── CURIO → ring, necklace, bracelet
+└── PROJECTILE → arrow
+```
+
+## Further reading
+
+<CardGroup cols={2}>
+  <Card title="Materials" href="/concepts/materials">
+    Choose the right materials for each gear type.
+  </Card>
+  <Card title="Parts" href="/concepts/parts">
+    Learn which part types each gear type requires.
+  </Card>
+  <Card title="Blueprints" href="/concepts/blueprints">
+    Get the blueprints needed to craft each gear type.
+  </Card>
+  <Card title="Traits" href="/concepts/traits">
+    Discover traits that interact with specific gear types.
+  </Card>
+</CardGroup>

@@ -1,0 +1,91 @@
+---
+title: "Alloy makers: combine materials into compound alloys"
+description: "Silent Gear's five alloy-making machines — Crude Mixer, Alloy Forge, Recrystallizer, Refabricator, and Super Mixer — blend simple materials into compound alloys."
+---
+
+Alloy makers are machines that combine two or more simple materials into a single compound material. The resulting compound inherits blended stats from all inputs, making it possible to create materials with combinations of properties that no single raw material provides.
+
+## How alloy making works
+
+Each alloy maker accepts a set of simple materials in its input slots. The machine processes them over roughly ten seconds and outputs a compound material item. You can disable processing at any time using the toggle button in the machine's GUI.
+
+The output item shown in the GUI's hint slot updates in real time as you add or change inputs, letting you preview the result before committing.
+
+<Note>
+Only **simple** materials can be placed in alloy maker input slots. Compound materials (items already made in an alloy maker) cannot be used as inputs again.
+</Note>
+
+### Synergy
+
+When the input materials belong to different material categories, the resulting compound receives a synergy bonus that increases alloy quality. Using the same material in all slots produces no synergy bonus. The more distinct categories present, the higher the bonus — so mixing e.g. a metal and a dust in the Alloy Forge yields better results than two metals alone.
+
+### Automation
+
+Alloy makers expose an item handler on all sides. Pipes and hoppers can insert materials into any input slot and extract from the output slot. Items can only be extracted from the output slot; input slots reject extraction.
+
+## The five alloy makers
+
+### Crude Mixer
+
+The Crude Mixer is the earliest alloy maker you can build. It accepts any material type and has **4 input slots**, making it accessible before you have access to the specialized machines.
+
+<Warning>
+Compounds produced in the Crude Mixer receive the **crude** modifier, which applies a property multiplier (default 0.8×) to numerical stats. You can adjust this multiplier in the mod's config under `compounds.crude_mixer.property_multiplier`. Crude alloys are a stepping stone — replace them with alloys from higher-tier machines when you can.
+</Warning>
+
+The Crude Mixer has a mixing-bowl shape rather than the tall machine shape of the other alloy makers.
+
+### Alloy Forge
+
+The Alloy Forge combines **metal and dust** category materials into alloy ingots. It has **6 input slots** and does not apply the crude modifier penalty.
+
+Use the Alloy Forge to produce metal-based compound materials such as alloy ingots made from crimson iron, azure silver, and other metals.
+
+### Recrystallizer
+
+The Recrystallizer combines **gem and dust** category materials into hybrid gems. It has **6 input slots**.
+
+Use the Recrystallizer when you want to produce compound gem materials — for example, mixing bort with other gems to create custom hybrid gem parts.
+
+### Refabricator
+
+The Refabricator combines **cloth, fiber, and slime** category materials into mixed fabric. It has **6 input slots**.
+
+Use the Refabricator to produce compound flexible materials for armor and tool parts that benefit from fabric-type materials.
+
+### Super Mixer
+
+The Super Mixer accepts **any material category** and has **8 input slots**, making it the most flexible and powerful alloy maker. It does not apply the crude modifier penalty.
+
+<Tip>
+If you want to use the Super Mixer but find its crafting requirements too demanding, the **Easy Super Mixer** optional data pack (included with Silent Gear) provides an easier recipe. Enable it by loading the data pack in your world.
+</Tip>
+
+The Super Mixer also has a mixing-bowl shape, the same as the Crude Mixer.
+
+## Usage
+
+<Steps>
+  <Step title="Craft and place the alloy maker">
+    Craft the alloy maker you need and place it in your base. It will face the direction opposite to where you were looking when placed.
+  </Step>
+  <Step title="Insert input materials">
+    Right-click the block to open the GUI. Place simple materials into the input slots. The hint slot on the right shows a preview of the output compound material.
+  </Step>
+  <Step title="Wait for processing">
+    The progress bar advances over approximately ten seconds. Once complete, the compound material appears in the output slot.
+  </Step>
+  <Step title="Collect the output">
+    Take the compound material from the output slot. You can now use it as a gear part material in the Gear Smithing Table.
+  </Step>
+</Steps>
+
+## Summary
+
+| Machine | Categories accepted | Input slots | Output item | Notes |
+|---|---|---|---|---|
+| Crude Mixer | Any | 4 | Crude alloy | Applies crude property penalty |
+| Alloy Forge | Metal, dust | 6 | Alloy ingot | — |
+| Recrystallizer | Gem, dust | 6 | Hybrid gem | — |
+| Refabricator | Cloth, fiber, slime | 6 | Mixed fabric | — |
+| Super Mixer | Any | 8 | Super alloy | Most flexible; Easy Super Mixer data pack available |
